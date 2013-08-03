@@ -11,3 +11,21 @@
 *.lai
 *.la
 *.a
+*.*BAK
+*.*~
+*.BAK
+
+#Cmake auto generated
+CMakeCache.txt
+CMakeFiles
+MakeFiles
+make_install.cmake
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+build
+
+.project
+.pydevproject
+.metafiles*
+*.BAK
