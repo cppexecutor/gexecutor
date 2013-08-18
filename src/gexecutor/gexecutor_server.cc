@@ -5,7 +5,7 @@
  *      Author: cppexecutor@gmail.com
  */
 
-#include "gexecutor_server.h"
+#include "gexecutor/gexecutor_server.h"
 
 GExecutorServer::GExecutorServer() {
     // TODO Auto-generated constructor stub

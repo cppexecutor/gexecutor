@@ -23,8 +23,7 @@ target_link_libraries(${GRCACHE_UNITTEST_MODULE_NAME}
 # Integrating the cmake with the unit test program such that make test
 # would run the above test case
 add_test (${GRCACHE_UNITTEST_MODULE_NAME}_SMOKE
-        ${CMAKE_BINARY_DIR}/${GRCACHE_UNITTEST_MODULE_NAME}
+        ${CMAKE_BINARY_DIR}/bin/${GRCACHE_UNITTEST_MODULE_NAME}
         --gtest_filter=*Smoke*
         --logtostderr=0
-        --gtest_output=xml:${GRCACHE_UNITTEST_MODULE_NAME}_SMOKE.xml
-        --unittest_bin_path=${CMAKE_BINARY_DIR})
+        --gtest_output=xml:${GRCACHE_UNITTEST_MODULE_NAME}_SMOKE.xml)
