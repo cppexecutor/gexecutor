@@ -11,8 +11,8 @@
 #include <event2/event.h>
 #include <string>
 #include <set>
-#include "gtaskq.h"
-#include "gexecutor_common.h"
+#include "gexecutor/gtaskq.h"
+#include "gexecutor/gexecutor_common.h"
 #include <glog/logging.h>
 /**
  * \description:

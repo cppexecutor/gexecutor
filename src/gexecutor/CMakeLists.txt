@@ -11,5 +11,13 @@ set (GEXECUTOR_SOURCES gexecutor.cc gasync_executor.cc gsync_executor.cc
 add_library(gexecutor SHARED ${GEXECUTOR_SOURCES})
 target_link_libraries(gexecutor event pthread)
 
+install (FILES gexecutor.h gasync_executor.h gsync_executor.h gtaskq.h 
+				gexecutor_common.h
+         DESTINATION include/gexecutor)
+
+install(TARGETS gexecutor
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib/static)
 add_subdirectory(test)
 

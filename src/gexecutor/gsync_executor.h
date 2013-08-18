@@ -8,8 +8,8 @@
 #ifndef GSYNC_EXECUTOR_H_
 #define GSYNC_EXECUTOR_H_
 #include <event2/event.h>
-#include "gexecutor.h"
-#include "gtaskq.h"
+#include "gexecutor/gexecutor.h"
+#include "gexecutor/gtaskq.h"
 #include <set>
 
 /**

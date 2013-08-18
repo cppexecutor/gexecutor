@@ -7,8 +7,8 @@
 
 #ifndef GTASKQ_H_
 #define GTASKQ_H_
-#include "gexecutor_common.h"
-#include "gexecutor.h"
+#include "gexecutor/gexecutor_common.h"
+#include "gexecutor/gexecutor.h"
 #include <queue>
 #include <deque>
 #include <sys/wait.h>

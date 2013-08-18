@@ -8,7 +8,7 @@
 #ifndef GASYN_CEXECUTOR_H_
 #define GASYN_CEXECUTOR_H_
 
-#include "gexecutor.h"
+#include "gexecutor/gexecutor.h"
 
 class GAsyncExecutor : public GExecutor {
 public:
