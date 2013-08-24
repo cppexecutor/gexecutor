@@ -12,7 +12,8 @@ include_directories(${PROJECT_SOURCE_DIR}/../)
 
 set(GRCACHE_UNITTEST_MODULE_NAME "gexecutor_unittest")
 set(GRCACHE_UNITTEST_MODULE_SRCS ../gexecutor.cc ../gasync_executor.cc 
-	../gsync_executor.cc ../gtaskq.cc ../gsync_worker_thread.cc)
+	../gsync_executor.cc ../gtaskq.cc ../gsync_worker_thread.cc 
+	../gexecutor_service.cc)
 
 add_executable(${GRCACHE_UNITTEST_MODULE_NAME} 
 	${GRCACHE_UNITTEST_MODULE_NAME}.cc ${GRCACHE_UNITTEST_MODULE_SRCS})

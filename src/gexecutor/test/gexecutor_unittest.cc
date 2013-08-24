@@ -6,6 +6,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "gexecutor_unittest.h"
 #include <iostream>
 #include <glog/logging.h>
 #include <gexecutor.h>
@@ -22,7 +23,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <gflags/gflags.h>
-
+#include <gexecutor_service.h>
 
 using namespace std;
 DEFINE_int64(timeout_us, 100000, "timeout value in usecs for events");
@@ -30,33 +31,65 @@ DEFINE_int64(timeout_s, 0, "timeout value in secs");
 DEFINE_int32(num_threads, 2, "Number of threads for running tests");
 DEFINE_int32(max_events, 3, "Max Number of events for tests");
 
-class GExecutorTest : public testing::Test {
-public:
-    void CheckForEventExecution(std::set<bool *> events_list) {
-        return;
+
+
+gerror_code_t GTaskPing::Execute() {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+                        << "Received Hello Task ID: "
+                        << id_ << " : " << DebugString()
+                        << " respq: " << resp_task_q_
+                        << " --> execq: " << exec_task_q_
+                        << std::endl;
+    if (id_%100 == 0) {
+        LOG(ERROR) << "Hello Task ID:" << id_ << " msg: " << DebugString()
+                            << std::endl;
     }
 
-protected:
-    struct event_base *event_base_;
-    virtual void SetUp() {
-        event_base_ = event_base_new();
-        if (!event_base_) {
-            ASSERT_TRUE(event_base_ != NULL);
-            GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Event Base null\n";
-            return;
+    if (exec_task_q_->num_dequeue() >=
+            FLAGS_max_events*(FLAGS_num_threads-1)) {
+        /**
+         * stop the thread
+         */
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+                         << " Shutdown of queue: " << exec_task_q_
+                         << " NumDeQ: " << exec_task_q_->num_dequeue()
+                         << std::endl;
+        executor_->Shutdown();
+    }
+
+    if (id_ < (2*FLAGS_max_events -1)) {
+        std::string new_msg = "ping";
+        if (msg_ == "ping") {
+            /**
+             * send pong
+             */
+            new_msg = "pong";
         }
 
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+        << "Sending Hello Task ID: "
+        << id_+1 << " : " << new_msg
+        << " execq: " << exec_task_q_
+        << " --> respq: " << resp_task_q_
+        << std::endl;
+
+        GTaskPing *p_resp_task =
+                new GTaskPing(exec_task_q_, new_msg);
+        p_resp_task->set_id(id_ + 1);
+        resp_task_q_->EnqueueGTask(p_resp_task);
     }
-    virtual void TearDown() {
-        if (event_base_) {
-            free(event_base_);
-        }
+    delete this;
+    return 0;
+}
+
+
+std::vector<GExecutor *>& ThreadInfo::executor_list() {
+    if (executor_list_ == NULL) {
+        executor_list_ =
+                new std::vector<GExecutor*>(FLAGS_num_threads);
     }
-
-};
-
-
-
+    return *executor_list_;
+}
 
 TEST_F(GExecutorTest, SampleSmoke) {
   // You can access data in the test fixture here.
@@ -66,118 +99,6 @@ TEST_F(GExecutorTest, SampleSmoke) {
 /**
  *
  */
-
-class GTaskHello : public GTask {
-public:
-    GTaskHello(GTaskQ* taskq)
-    : GTask(taskq), id_(0) {
-    }
-    virtual ~GTaskHello() {
-        return;
-    }
-    void set_id(int id) {
-           id_ = id;
-    }
-protected:
-    virtual gerror_code_t Execute() {
-        GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Hello Task ID" << id_ << std::endl;
-        delete this;
-        return 0;
-    }
-private:
-    int id_;
-};
-
-
-class GTaskPing : public GTask {
-public:
-    GTaskPing(GTaskQ* resp_task_q, const std::string& msg)
-        : GTask(resp_task_q), id_(0), msg_(msg) {
-    }
-    virtual ~GTaskPing() {
-        return;
-    }
-    void set_id(int id) {
-           id_ = id;
-    }
-    const std::string& DebugString() {
-        return msg_;
-    }
-protected:
-    virtual gerror_code_t Execute() {
-        GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                << "Received Hello Task ID: "
-                << id_ << " : " << DebugString()
-                << " respq: " << resp_task_q_
-                << " --> execq: " << exec_task_q_
-                << std::endl;
-        if (id_%100 == 0) {
-            LOG(ERROR) << "Hello Task ID:" << id_ << " msg: " << DebugString()
-                    << std::endl;
-        }
-
-        if (exec_task_q_->num_dequeue() >=
-                FLAGS_max_events*(FLAGS_num_threads-1)) {
-            /**
-             * stop the thread
-             */
-            GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                 << " Shutdown of queue: " << exec_task_q_
-                 << " NumDeQ: " << exec_task_q_->num_dequeue()
-                 << std::endl;
-            executor_->Shutdown();
-        }
-
-        if (id_ < (2*FLAGS_max_events -1)) {
-            std::string new_msg = "ping";
-            if (msg_ == "ping") {
-                /**
-                 * send pong
-                 */
-                new_msg = "pong";
-            }
-
-            GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                    << "Sending Hello Task ID: "
-                    << id_+1 << " : " << new_msg
-                    << " execq: " << exec_task_q_
-                    << " --> respq: " << resp_task_q_
-                    << std::endl;
-
-            GTaskPing *p_resp_task =
-                    new GTaskPing(exec_task_q_, new_msg);
-            p_resp_task->set_id(id_ + 1);
-            resp_task_q_->EnqueueGTask(p_resp_task);
-        }
-        delete this;
-        return 0;
-    }
-private:
-    int id_;
-    std::string msg_;
-};
-
-class GTaskCheckTaskQ : public GTask {
-public:
-    GTaskCheckTaskQ(GTaskQ* taskq)
-    : GTask(taskq), id_(0) {
-    }
-    virtual ~GTaskCheckTaskQ() {
-        return;
-    }
-    void set_id(int id) {
-        id_ = id;
-    }
-protected:
-    virtual gerror_code_t Execute() {
-        GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                << "Hello Task SRC ID" << id_ << std::endl;
-        delete this;
-        return 0;
-    }
-private:
-    int id_;
-};
 
 
 TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
@@ -198,35 +119,6 @@ TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
 }
 
 
-class ThreadInfo {
-public:
-    enum GExecutorTestType {
-        HELLO=0,
-        PINGPONG=1
-    };
-
-    pthread_t thread_id;        /* ID returned by pthread_create() */
-    int       thread_num;       /* Application-defined thread # */
-    int       max_events;
-    GTaskQ*   taskq;
-    static    int num_queues;
-    struct event *timer_ev;
-    struct event_base* async_base;
-    void (*start_routine)(evutil_socket_t fd, short what, void *arg);
-    GExecutorTestType task_type;
-    static std::vector<GExecutor *>& executor_list() {
-        if (executor_list_ == NULL) {
-            executor_list_ =
-                    new std::vector<GExecutor*>(FLAGS_num_threads);
-        }
-        return *executor_list_;
-    }
-    bool is_thread_stopped;
-    bool ping_started;
-
-private:
-    static    std::vector<GExecutor*>* executor_list_;
-};
 
 int ThreadInfo::num_queues = FLAGS_num_threads;
 std::vector<GExecutor*>* ThreadInfo::executor_list_ = 0;
@@ -452,6 +344,48 @@ static void *gasync_executor_thread(void *args) {
 }
 
 
+static void *gasync_svc_executor_thread(void *args) {
+
+    ThreadInfo* p_tinfo =
+            static_cast<ThreadInfo*>(args);
+
+    struct event_base* async_base = event_base_new();
+    GExecutor *async_engine =
+            p_tinfo->p_svc->CreateAsyncExecutor(
+                    std::to_string(p_tinfo->thread_num),
+                    p_tinfo->taskq,
+                    async_base);
+
+    ThreadInfo::executor_list()[p_tinfo->thread_num] =
+            async_engine;
+
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+           << "Starting Worker Thread " << p_tinfo->thread_num
+           << " thread id " << p_tinfo->thread_id
+           << " Async Engine " << std::hex << async_engine << std::endl;
+
+    /**
+     * Goal is for this timer event to add a task for other async engines.
+     */
+
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+               << "Adding timer thread " << p_tinfo->thread_num
+               << " thread id " << p_tinfo->thread_id << std::endl;
+    struct timeval timeout = { FLAGS_timeout_s, FLAGS_timeout_us };
+    struct event *ev;
+    void *timer_arg = static_cast<void *>(p_tinfo);
+    ev = event_new(async_base, -1, EV_TIMEOUT,
+                   *(p_tinfo->start_routine), timer_arg);
+    event_add(ev, &timeout);
+    p_tinfo->async_base = async_base;
+    event_base_dispatch(async_base);
+    p_tinfo->p_svc->DestroyExecutor(std::to_string(p_tinfo->thread_num));
+    ThreadInfo::executor_list()[p_tinfo->thread_num] = NULL;
+    return p_tinfo;
+}
+
+
+
 TEST_F(GExecutorTest, InitializeAsyncSmoke) {
     pthread_attr_t attr1;
     ThreadInfo *tinfo = NULL;
@@ -627,6 +561,67 @@ TEST_F(GExecutorTest, InitializeSyncSmoke) {
 
 
 
+TEST_F(GExecutorTest, ASyncServiceSmoke) {
+    pthread_attr_t attr1;
+    ThreadInfo *tinfo = NULL;
+    int rc = 0;
+
+
+    rc = pthread_attr_init(&attr1);
+    ASSERT_EQ(rc, 0);
+
+    pthread_attr_setstacksize(&attr1, 1024*1024);
+
+    tinfo = static_cast<ThreadInfo *>(
+            calloc(FLAGS_num_threads, sizeof(ThreadInfo)));
+
+    ASSERT_TRUE(tinfo != NULL);
+
+    std::vector<GExecutor *> executor_list(FLAGS_num_threads);
+    executor_list[0] = NULL;
+    executor_list[1] = NULL;
+
+    /* Create one thread for each command-line argument */
+
+    for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
+        tinfo[tnum].thread_num = tnum;
+        tinfo[tnum].max_events = FLAGS_max_events;
+        tinfo[tnum].taskq = new GTaskQ();
+        rc = tinfo[tnum].taskq->Initialize();
+        tinfo[tnum].start_routine = timer_cb_func;
+        tinfo[tnum].task_type = ThreadInfo::HELLO;
+        tinfo[tnum].p_svc = &g_svc_;
+
+        ASSERT_EQ(rc, 0);
+        /* The pthread_create() call stores the thread ID into
+                     corresponding element of tinfo[] */
+
+        rc = pthread_create(&tinfo[tnum].thread_id, &attr1,
+                           &gasync_svc_executor_thread, &tinfo[tnum]);
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << "Created thread with id" << tinfo[tnum].thread_id << std::endl;
+        ASSERT_EQ(rc, 0);
+    }
+
+    rc = pthread_attr_destroy(&attr1);
+    ASSERT_EQ(rc, 0);
+
+    /* Now join with each thread, and display its returned value */
+    for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
+        void *res = NULL;
+        rc = pthread_join(tinfo[tnum].thread_id, &res);
+        ASSERT_EQ(rc, 0);
+
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            <<  "Joined with thread "<< tinfo[tnum].thread_num
+            <<  "returned value was " << res << std::endl;
+        //free(res);      /* Free memory allocated by thread */
+    }
+    free(tinfo);
+}
+
+
+
 class GeTestEnvironment: public testing::Environment {
 public:
     virtual void SetUp() {
@@ -663,35 +658,6 @@ int main(int argc, char *argv[]) {
 
 
 
-class GSyncExecutorTest : public testing::Test {
-public:
-
-protected:
-    struct event_base *event_base_;
-    virtual void SetUp() {
-        event_base_ = event_base_new();
-        if (!event_base_) {
-            ASSERT_TRUE(event_base_ != NULL);
-            GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Event Base null\n";
-            return;
-        }
-
-    }
-    virtual void TearDown() {
-        if (event_base_) {
-            event_base_free(event_base_);
-        }
-    }
-};
-
-
-class HybridApp {
-public:
-    GExecutor* sync;
-    GExecutor* async;
-    struct event *timer_ev;
-    struct event_base *async_base;
-};
 
 
 
