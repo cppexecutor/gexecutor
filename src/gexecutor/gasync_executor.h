@@ -12,7 +12,7 @@
 
 class GAsyncExecutor : public GExecutor {
 public:
-    GAsyncExecutor(GExecutorType type, struct event_base *event_base,
+    GAsyncExecutor(struct event_base *event_base,
                    GTaskQ *taskq);
     virtual ~GAsyncExecutor();
     virtual gerror_code_t Initialize();
@@ -46,15 +46,6 @@ public:
 protected:
     struct event_base *event_base_;
 private:
-    /**
-     * Async executor may have its own event base
-     *
-     */
-    GTaskQ *p_taskq_;
-    /**
-     * TaskQ may be shared across multiple executors for reading. So, it
-     * not part of the taskq data structure.
-     */
     struct event *p_taskq_ev_;
     struct event *p_timer_ev_;
     struct timeval taskq_timeout_;

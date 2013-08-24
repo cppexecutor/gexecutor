@@ -8,17 +8,26 @@
 #ifndef GEXECUTOR_SERVER_H_
 #define GEXECUTOR_SERVER_H_
 #include "gexecutor/gexecutor.h"
-#include <set>
+#include <unordered_map>
 
-class GExecutorServer {
+class GExecutorService {
 public:
-    GExecutorServer();
-    virtual ~GExecutorServer();
-    gerror_code_t AddExecutor(const std::string& name, GExecutor *p_executor);
-    GExecutor *RemoveExecutor(const std::string& name);
-    GExecutor *executor(GExecutorType type);
+    GExecutorService();
+    virtual ~GExecutorService();
+    void Initialize();
+    gerror_code_t DestroyExecutor(const std::string& gexecutor_id);
+    GExecutor* CreateAsyncExecutor(
+            const std::string& executor_id,
+            GTaskQ *p_taskq,
+            struct event_base *async_event_base);
+
+    GExecutor* CreateSyncExecutor(
+            const std::string& executor_id,
+            size_t num_default_threads);
+    GExecutor* gexecutor(const std::string& gexecutor_id);
 private:
-    std::set<GExecutor *> executors_list_;
+    pthread_mutex_t gexecutor_lock_;
+    std::unordered_map<std::string, GExecutor*> gexecutor_map_;
 };
 
 #endif /* GEXECUTOR_SERVER_H_ */

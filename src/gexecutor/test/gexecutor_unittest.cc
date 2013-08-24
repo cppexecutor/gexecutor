@@ -184,11 +184,10 @@ TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
     GTaskQ* taskq = new GTaskQ();
 
     GExecutor *async_engine =
-            new GAsyncExecutor(GExecutor::ASYNC,
-                               event_base_, taskq);
+            new GAsyncExecutor(event_base_, taskq);
 
     GExecutor *sync_engine =
-            new GSyncExecutor(GExecutor::SYNC, taskq);
+            new GSyncExecutor(taskq);
 
     ASSERT_TRUE(async_engine != NULL);
     ASSERT_TRUE(sync_engine != NULL);
@@ -419,8 +418,7 @@ static void *gasync_executor_thread(void *args) {
 
     struct event_base* async_base = event_base_new();
     GAsyncExecutor *async_engine =
-            new GAsyncExecutor(GExecutor::ASYNC,
-                               async_base,
+            new GAsyncExecutor(async_base,
                                p_thread_info->taskq);
 
     ThreadInfo::executor_list()[p_thread_info->thread_num] =
@@ -763,14 +761,13 @@ TEST_F(GSyncExecutorTest, SyncWorkerSmoke) {
     GTaskQ* async_taskq = new GTaskQ();
     async_taskq->Initialize();
     GSyncExecutor *sync_engine =
-            new GSyncExecutor(GExecutor::SYNC, sync_taskq);
+            new GSyncExecutor(sync_taskq);
 
     //this woudl start the workers.
     sync_engine->Initialize();
 
     GAsyncExecutor* async_engine =
-            new GAsyncExecutor(GExecutor::ASYNC,
-                               event_base_, async_taskq);
+            new GAsyncExecutor(event_base_, async_taskq);
 
     async_engine->Initialize();
 

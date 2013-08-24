@@ -11,11 +11,9 @@
 #include <iostream>
 #include <glog/logging.h>
 
-GAsyncExecutor::GAsyncExecutor(GExecutorType type,
-                               struct event_base *event_base,
+GAsyncExecutor::GAsyncExecutor(struct event_base *event_base,
                                GTaskQ *taskq)
-    : GExecutor(type, taskq), event_base_(event_base),
-      p_taskq_(taskq),
+    : GExecutor(GExecutorType::ASYNC, taskq), event_base_(event_base),
       p_taskq_ev_(NULL), taskq_timeout_(), timer_timeout_() {
     // TODO Auto-generated constructor stub
 

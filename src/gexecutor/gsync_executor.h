@@ -24,8 +24,7 @@ class GSyncWorkerThread;
 
 class GSyncExecutor: public GExecutor {
 public:
-    GSyncExecutor(GExecutorType type,
-                  GTaskQ* taskq,
+    GSyncExecutor(GTaskQ* taskq,
                   size_t num_workers = 4);
 
     virtual ~GSyncExecutor();
@@ -40,10 +39,8 @@ public:
      */
     gerror_code_t Initialize();
 private:
-    GTaskQ *p_taskq_;
     size_t num_workers_;
     std::set<GSyncWorkerThread *> workers_;
-    //struct event_base *sync_event_base_;
 };
 
 #endif /* GSYNC_EXECUTOR_H_ */

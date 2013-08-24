@@ -6,12 +6,12 @@ project(executor)
 
 include_directories(${PROJECT_SOURCE_DIR}/../)
 set (GEXECUTOR_SOURCES gexecutor.cc gasync_executor.cc gsync_executor.cc 
-		gtaskq.cc gsync_worker_thread.cc)
+		gtaskq.cc gsync_worker_thread.cc gexecutor_server.cc)
 
 add_library(gexecutor SHARED ${GEXECUTOR_SOURCES})
 target_link_libraries(gexecutor event pthread)
 
-install (FILES gexecutor.h gasync_executor.h gsync_executor.h gtaskq.h 
+install (FILES gexecutor.h gexecutor_server.h gtaskq.h 
 				gexecutor_common.h
          DESTINATION include/gexecutor)
 

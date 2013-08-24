@@ -14,6 +14,7 @@
 #include "gexecutor/gtaskq.h"
 #include "gexecutor/gexecutor_common.h"
 #include <glog/logging.h>
+#include <unordered_map>
 /**
  * \description:
  *
@@ -56,30 +57,36 @@ class GExecutor {
      * @param event_base
      * @param taskq: This needs to be created before threads are created.
      */
-    GExecutor(GExecutorType type,
-              //struct event_base *event_base,
-              GTaskQ* taskq);
+
     virtual ~GExecutor();
 
     virtual gerror_code_t EnQueueTask(GTask *task) = 0;
 
+    /**
+     * Returns the underlying taskq for this executor. This task queue can be
+     * used to enqueue tasks for this execution block.
+     * @return
+     */
     virtual GTaskQ* taskq() = 0;
 
     virtual gerror_code_t Shutdown() = 0;
 
     virtual void PrintTo(const GExecutor& executor, ::std::ostrstream* os);
 
+    /**
+     * Returns type of the execution block
+     * @return
+     */
     GExecutorType type() const {
         return gexec_type_;
     }
 
-//    struct event_base* event_base() {
-//        return event_base_;
-//    }
-
  protected:
     // struct event_base *event_base_;
+    GExecutor(GExecutorType type,
+              GTaskQ* taskq);
     GExecutorType gexec_type_;
+    GTaskQ *p_taskq_;
     uint64_t num_enqueue_;
     uint64_t num_dequeue_;
     uint64_t num_task_with_response_;
@@ -87,6 +94,7 @@ class GExecutor {
     uint64_t max_rate_of_dequeue;
     uint64_t rate_of_enqueue_in_100secs;
     uint64_t max_rate_of_enqueue;
+
  private:
 
 };

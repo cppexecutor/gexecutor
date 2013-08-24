@@ -10,10 +10,9 @@
 #include <set>
 
 
-GSyncExecutor::GSyncExecutor(GExecutorType type,
-                             GTaskQ* taskq,
+GSyncExecutor::GSyncExecutor(GTaskQ* taskq,
                              size_t num_workers)
-    : GExecutor(type, taskq), p_taskq_(taskq), num_workers_(num_workers) {
+    : GExecutor(GExecutorType::SYNC, taskq), num_workers_(num_workers) {
 }
 
 GSyncExecutor::~GSyncExecutor() {

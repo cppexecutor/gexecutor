@@ -70,8 +70,7 @@ void GSyncWorkerThread::SetupEventLoop() {
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
         << "Settting up Event loop for worker\n";
     event_base_ = event_base_new();
-    async_executor_ = new GAsyncExecutor(GExecutor::ASYNC,
-                                         event_base_,
+    async_executor_ = new GAsyncExecutor(event_base_,
                                          taskq_);
     async_executor_->Initialize();
 }
