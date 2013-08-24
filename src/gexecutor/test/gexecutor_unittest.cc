@@ -131,9 +131,10 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
         ASSERT_TRUE(p_thread_info);
         return;
     }
+    GExecutor *p_exec = ThreadInfo::executor_list()[p_thread_info->thread_num];
+    ASSERT_TRUE(p_exec != NULL);
 
-    GTaskQ *p_resp_taskq =
-            ThreadInfo::executor_list()[p_thread_info->thread_num]->taskq();
+    GTaskQ *p_resp_taskq = p_exec->taskq();
 
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
         << "Thread: " << p_thread_info->thread_num << " "
@@ -348,11 +349,11 @@ static void *gasync_svc_executor_thread(void *args) {
 
     ThreadInfo* p_tinfo =
             static_cast<ThreadInfo*>(args);
-
+    std::string gexecutor_id = std::to_string(p_tinfo->thread_num);
     struct event_base* async_base = event_base_new();
     GExecutor *async_engine =
             p_tinfo->p_svc->CreateAsyncExecutor(
-                    std::to_string(p_tinfo->thread_num),
+                    gexecutor_id,
                     p_tinfo->taskq,
                     async_base);
 
@@ -363,6 +364,7 @@ static void *gasync_svc_executor_thread(void *args) {
            << "Starting Worker Thread " << p_tinfo->thread_num
            << " thread id " << p_tinfo->thread_id
            << " Async Engine " << std::hex << async_engine << std::endl;
+
 
     /**
      * Goal is for this timer event to add a task for other async engines.
@@ -379,8 +381,8 @@ static void *gasync_svc_executor_thread(void *args) {
     event_add(ev, &timeout);
     p_tinfo->async_base = async_base;
     event_base_dispatch(async_base);
-    p_tinfo->p_svc->DestroyExecutor(std::to_string(p_tinfo->thread_num));
     ThreadInfo::executor_list()[p_tinfo->thread_num] = NULL;
+    p_tinfo->p_svc->DestroyExecutor(gexecutor_id);
     return p_tinfo;
 }
 

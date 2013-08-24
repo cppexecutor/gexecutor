@@ -67,7 +67,9 @@ class GExecutor {
      * used to enqueue tasks for this execution block.
      * @return
      */
-    virtual GTaskQ* taskq() = 0;
+    virtual GTaskQ* taskq() {
+        return p_taskq_;
+    }
 
     virtual gerror_code_t Shutdown() = 0;
 

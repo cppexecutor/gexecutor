@@ -41,10 +41,10 @@ gerror_code_t GExecutorService::DestroyExecutor(const std::string& gexecutor_id)
     if (p_gexec == NULL) {
         return -1;
     }
+    //p_gexec->Shutdown();
     if (p_gexec->type() == GExecutor::GExecutorType::SYNC) {
         delete p_gexec->taskq();
     }
-    p_gexec->Shutdown();
     delete p_gexec;
     return 0;
 }
@@ -66,7 +66,7 @@ GExecutor* GExecutorService::CreateAsyncExecutor(
     pthread_mutex_lock(&gexecutor_lock_);
     gexecutor_map_[executor_id] = p_executor;
     pthread_mutex_unlock(&gexecutor_lock_);
-    return NULL;
+    return p_executor;
 }
 
 GExecutor* GExecutorService::CreateSyncExecutor(const std::string& executor_id,
