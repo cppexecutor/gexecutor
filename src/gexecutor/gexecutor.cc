@@ -24,7 +24,4 @@ GExecutor::~GExecutor() {
 
 }
 
-void GExecutor::PrintTo(const GExecutor& executor, ::std::ostrstream* os) {
-    *os << "Gexecutor: type["<< executor.type() << "]" << std::endl;
-}
 

@@ -18,9 +18,11 @@
 /**
  * \description:
  *
- * There are essentially two kinds of execution paradigms
+ * There are two types of execution paradigms
  * 1. Asynchronous (typically using non-blocking I/O)
  * 2. Synchronous (typically using blocking I/O)
+ *
+ *
  *
  * What is an executor?
  * Following the interface from Java, an Executor is simply a service that
@@ -72,8 +74,6 @@ class GExecutor {
     }
 
     virtual gerror_code_t Shutdown() = 0;
-
-    virtual void PrintTo(const GExecutor& executor, ::std::ostrstream* os);
 
     /**
      * Returns type of the execution block

@@ -112,7 +112,8 @@ class ThreadInfo {
 public:
     enum GExecutorTestType {
         HELLO=0,
-        PINGPONG=1
+        PINGPONG=1,
+        HELLO_LOOP=2,
     };
 
     pthread_t thread_id;        /* ID returned by pthread_create() */

@@ -15,8 +15,6 @@ GAsyncExecutor::GAsyncExecutor(struct event_base *event_base,
                                GTaskQ *taskq)
     : GExecutor(GExecutorType::ASYNC, taskq), event_base_(event_base),
       p_taskq_ev_(NULL), taskq_timeout_(), timer_timeout_() {
-    // TODO Auto-generated constructor stub
-
     /**
      *  When a async executor is created then following is done
      *  1. setup a queue for receiving events
@@ -28,8 +26,6 @@ GAsyncExecutor::GAsyncExecutor(struct event_base *event_base,
 }
 
 GAsyncExecutor::~GAsyncExecutor() {
-    // TODO Auto-generated destructor stub
-
     if (p_taskq_ev_) {
         event_del(p_taskq_ev_);
         event_free(p_taskq_ev_);

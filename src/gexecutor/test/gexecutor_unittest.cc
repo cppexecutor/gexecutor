@@ -188,6 +188,11 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             p_task = task_;
             p_destq->EnqueueGTask(p_task, NULL);
 
+        } else if (p_thread_info->task_type == ThreadInfo::HELLO_LOOP) {
+            GTaskHello *task_ = new GTaskHello(p_resp_taskq);
+            task_->set_id(p_thread_info->thread_num);
+            p_task = task_;
+            p_destq->EnqueueGTask(p_task, NULL);
         }
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Dest Thread: " << thread_indx
@@ -621,6 +626,69 @@ TEST_F(GExecutorTest, ASyncServiceSmoke) {
     }
     free(tinfo);
 }
+
+
+TEST_F(GExecutorTest, ASyncLoopTestSmoke) {
+    pthread_attr_t attr1;
+    ThreadInfo *tinfo = NULL;
+    int rc = 0;
+
+
+    rc = pthread_attr_init(&attr1);
+    ASSERT_EQ(rc, 0);
+
+    pthread_attr_setstacksize(&attr1, 1024*1024);
+
+    tinfo = static_cast<ThreadInfo *>(
+            calloc(FLAGS_num_threads, sizeof(ThreadInfo)));
+
+    ASSERT_TRUE(tinfo != NULL);
+
+    std::vector<GExecutor *> executor_list(FLAGS_num_threads);
+    for (int exec_index = 0; exec_index < FLAGS_num_threads; exec_index++) {
+        executor_list[exec_index] = NULL;
+    }
+    /* Create one thread for each command-line argument */
+
+    for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
+        tinfo[tnum].thread_num = tnum;
+        tinfo[tnum].max_events = FLAGS_max_events;
+        tinfo[tnum].taskq = new GTaskQ();
+        rc = tinfo[tnum].taskq->Initialize();
+        tinfo[tnum].start_routine = timer_cb_func;
+        tinfo[tnum].task_type = ThreadInfo::HELLO_LOOP;
+        tinfo[tnum].p_svc = &g_svc_;
+
+        ASSERT_EQ(rc, 0);
+        /* The pthread_create() call stores the thread ID into
+                     corresponding element of tinfo[] */
+
+        rc = pthread_create(&tinfo[tnum].thread_id, &attr1,
+                           &gasync_svc_executor_thread, &tinfo[tnum]);
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << "Created thread with id" << tinfo[tnum].thread_id << std::endl;
+        ASSERT_EQ(rc, 0);
+    }
+
+    rc = pthread_attr_destroy(&attr1);
+    ASSERT_EQ(rc, 0);
+
+    /* Now join with each thread, and display its returned value */
+    for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
+        void *res = NULL;
+        rc = pthread_join(tinfo[tnum].thread_id, &res);
+        ASSERT_EQ(rc, 0);
+
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            <<  "Joined with thread "<< tinfo[tnum].thread_num
+            <<  "returned value was " << res << std::endl;
+        //free(res);      /* Free memory allocated by thread */
+    }
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+                <<  "freeing the thread info\n";
+    //free(tinfo);
+}
+
 
 
 

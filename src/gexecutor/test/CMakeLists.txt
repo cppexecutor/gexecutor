@@ -17,9 +17,12 @@ set(GRCACHE_UNITTEST_MODULE_SRCS ../gexecutor.cc ../gasync_executor.cc
 
 add_executable(${GRCACHE_UNITTEST_MODULE_NAME} 
 	${GRCACHE_UNITTEST_MODULE_NAME}.cc ${GRCACHE_UNITTEST_MODULE_SRCS})
+
+FIND_LIBRARY(GTEST gtest /usr/local/lib)
 	
 target_link_libraries(${GRCACHE_UNITTEST_MODULE_NAME}
-        event gflags glog gtest pthread dl)
+        event gflags glog ${GTEST} pthread dl)
+
 
 # Integrating the cmake with the unit test program such that make test
 # would run the above test case
