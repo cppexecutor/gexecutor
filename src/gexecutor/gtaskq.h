@@ -16,16 +16,18 @@
 #include <glog/logging.h>
 #include <assert.h>
 #include <pthread.h>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
+
 class GTask;
 class GExecutor;
 class GTaskQ;
-
 
 /**
  * This is the task interface
  *
  */
-class GTask {
+class GTask : public boost::enable_shared_from_this<GTask> {
 public:
     /**
      * Need to initialize the GTask where the response should be sent.
@@ -75,7 +77,7 @@ protected:
  *
  */
 
-class GTaskQ {
+class GTaskQ : public boost::enable_shared_from_this<GTaskQ> {
 public:
     GTaskQ();
     virtual ~GTaskQ();
