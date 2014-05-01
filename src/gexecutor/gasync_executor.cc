@@ -91,7 +91,7 @@ public:
 protected:
     virtual gerror_code_t Execute() {
         VLOG(GEXECUTOR_TRACE) << "Hello Task" << std::endl;
-        delete this;
+        //delete this;
         return 0;
     }
 };

@@ -56,7 +56,7 @@ public:
 protected:
     virtual gerror_code_t Execute() {
         GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Hello Task ID" << id_ << std::endl;
-        delete this;
+        //delete this;
         return 0;
     }
 private:
@@ -100,7 +100,7 @@ protected:
     virtual gerror_code_t Execute() {
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
                 << "Hello Task SRC ID" << id_ << std::endl;
-        delete this;
+        //delete this;
         return 0;
     }
 private:

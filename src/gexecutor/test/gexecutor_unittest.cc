@@ -78,7 +78,7 @@ gerror_code_t GTaskPing::Execute() {
         p_resp_task->set_id(id_ + 1);
         resp_task_q_->EnqueueGTask(p_resp_task);
     }
-    delete this;
+//#delete this;
     return 0;
 }
 
@@ -180,6 +180,8 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             boost::shared_ptr<GTaskHello> task_(new GTaskHello(p_resp_taskq));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
+            GEXECUTOR_LOG(GEXECUTOR_TRACE)
+                << "Shared ptr use count" << p_task.use_count() << std::endl;
             p_destq->EnqueueGTask(p_task, NULL);
         } else if (p_thread_info->task_type == ThreadInfo::PINGPONG) {
             boost::shared_ptr<GTaskPing>task_(new GTaskPing(p_resp_taskq,
