@@ -16,8 +16,8 @@
 #include <glog/logging.h>
 #include <assert.h>
 #include <pthread.h>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 class GTask;
 class GExecutor;
@@ -68,7 +68,11 @@ protected:
     GTaskQ* resp_task_q_;
     GTaskQ* exec_task_q_;
     GExecutor* executor_;
+private:
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTask);
 };
+
+typedef boost::shared_ptr<GTask> GTaskSharedPtr;
 
 
 /**
@@ -90,9 +94,9 @@ public:
      * @return
      */
     virtual gerror_code_t Initialize();
-    virtual gerror_code_t EnqueueGTask(GTask *task,
+    virtual gerror_code_t EnqueueGTask(GTaskSharedPtr task,
                                        GExecutor* executor_ctx = NULL);
-    virtual GTask* DequeueGTask();
+    virtual GTaskSharedPtr DequeueGTask();
     virtual int read_fd() {
         return pipefds_[PIPE_FD_READ_INDX];
     }
@@ -123,12 +127,15 @@ private:
         PIPE_FD_WRITE_INDX = 1,
         PIPE_NUM_FDS = PIPE_FD_WRITE_INDX
     };
-    std::deque<GTask *> task_queue_;
+    std::deque<GTaskSharedPtr> task_queue_;
     GExecutor* executor_ctx_;
     size_t num_outstanding_notifn_;
     int pipefds_[PIPE_NUM_FDS];
     char *notfn_buffer_;
     pthread_mutex_t q_lock_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTaskQ);
 };
+
+typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
 
 #endif /* GTASKQ_H_ */

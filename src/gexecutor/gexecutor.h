@@ -42,9 +42,9 @@
  */
 
 
-
+/*
 class GTask;
-class GTaskQ;
+class GTaskQ;*/
 
 class GExecutor {
  public:
@@ -62,7 +62,7 @@ class GExecutor {
 
     virtual ~GExecutor();
 
-    virtual gerror_code_t EnQueueTask(GTask *task) = 0;
+    virtual gerror_code_t EnQueueTask(GTaskSharedPtr task) = 0;
 
     /**
      * Returns the underlying taskq for this executor. This task queue can be
@@ -98,7 +98,7 @@ class GExecutor {
     uint64_t max_rate_of_enqueue;
 
  private:
-
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutor);
 };
 
 

@@ -28,7 +28,7 @@ public:
                   size_t num_workers = 4);
 
     virtual ~GSyncExecutor();
-    virtual gerror_code_t EnQueueTask(GTask *task);
+    virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
     virtual gerror_code_t Shutdown();
     virtual GTaskQ* taskq() {
         return p_taskq_;
@@ -41,6 +41,7 @@ public:
 private:
     size_t num_workers_;
     std::set<GSyncWorkerThread *> workers_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncExecutor);
 };
 
 #endif /* GSYNC_EXECUTOR_H_ */

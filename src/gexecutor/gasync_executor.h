@@ -16,7 +16,7 @@ public:
                    GTaskQ *taskq);
     virtual ~GAsyncExecutor();
     virtual gerror_code_t Initialize();
-    virtual gerror_code_t EnQueueTask(GTask *task);
+    virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
 //    virtual gerror_code_t EnQueueTask(GTask *task,
 //                                      GExecutor* task_originator_ctx);
     /**
@@ -29,7 +29,7 @@ public:
         if (p_taskq_ev_) {
             event_del(p_taskq_ev_);
             event_free(p_taskq_ev_);
-            p_taskq_ev_ = NULL;
+            p_taskq_ev_ = 0;
         }
         StopTimer();
         return 0;
@@ -41,7 +41,7 @@ public:
         }
         event_del(p_timer_ev_);
         //event_free(p_timer_ev_);
-        p_timer_ev_ = NULL;
+        p_timer_ev_ = 0;
     }
 protected:
     struct event_base *event_base_;
@@ -50,7 +50,7 @@ private:
     struct event *p_timer_ev_;
     struct timeval taskq_timeout_;
     struct timeval timer_timeout_;
-
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutor);
 };
 
 #endif /* GASYN_CEXECUTOR_H_ */

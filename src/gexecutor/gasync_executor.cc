@@ -33,7 +33,7 @@ GAsyncExecutor::~GAsyncExecutor() {
     }
 }
 
-gerror_code_t GAsyncExecutor::EnQueueTask(GTask *task) {
+gerror_code_t GAsyncExecutor::EnQueueTask(GTaskSharedPtr task) {
     return p_taskq_->EnqueueGTask(task, this);
 }
 
@@ -67,7 +67,7 @@ static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
                    << "Read: "<< num_bytes << " from fd: " << fd << std::endl;
         for (int num_tasks = 0; num_tasks < num_bytes; num_tasks++) {
-            GTask *p_task = p_taskq->DequeueGTask();
+            GTaskSharedPtr p_task = p_taskq->DequeueGTask();
             GEXECUTOR_LOG(GEXECUTOR_TRACE)
                 << "Executing task " << p_task << std::endl;
             if (p_task) {

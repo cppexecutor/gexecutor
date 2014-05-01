@@ -19,7 +19,7 @@ GSyncExecutor::~GSyncExecutor() {
     // TODO Auto-generated destructor stub
 }
 
-gerror_code_t GSyncExecutor::EnQueueTask(GTask *task) {
+gerror_code_t GSyncExecutor::EnQueueTask(GTaskSharedPtr task) {
     return 0;
 }
 

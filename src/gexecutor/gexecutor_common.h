@@ -22,4 +22,9 @@ typedef int64_t gerror_code_t;
         << "GEXECUTOR:[" << __FUNCTION__ << ":" << __LINE__ << "]"
 #endif
 
+#undef GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS
+#define GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(TypeName)    \
+  TypeName(const TypeName&);                           \
+  void operator=(const TypeName&)
+
 #endif /* GEXECUTOR_COMMON_H_ */

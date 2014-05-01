@@ -73,8 +73,8 @@ gerror_code_t GTaskPing::Execute() {
         << " --> respq: " << resp_task_q_
         << std::endl;
 
-        GTaskPing *p_resp_task =
-                new GTaskPing(exec_task_q_, new_msg);
+        boost::shared_ptr<GTaskPing> p_resp_task(
+                new GTaskPing(exec_task_q_, new_msg));
         p_resp_task->set_id(id_ + 1);
         resp_task_q_->EnqueueGTask(p_resp_task);
     }
@@ -175,21 +175,21 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             << " MaxEvents: " << p_thread_info->max_events
             << std::endl;
 
-        GTask* p_task = NULL;
+        GTaskSharedPtr p_task;
         if (p_thread_info->task_type == ThreadInfo::HELLO) {
-            GTaskHello *task_ = new GTaskHello(p_resp_taskq);
+            boost::shared_ptr<GTaskHello> task_(new GTaskHello(p_resp_taskq));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
             p_destq->EnqueueGTask(p_task, NULL);
         } else if (p_thread_info->task_type == ThreadInfo::PINGPONG) {
-            GTaskPing *task_ =
-                    new GTaskPing(p_resp_taskq, "ping");
+            boost::shared_ptr<GTaskPing>task_(new GTaskPing(p_resp_taskq,
+                                                            "ping"));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
             p_destq->EnqueueGTask(p_task, NULL);
 
         } else if (p_thread_info->task_type == ThreadInfo::HELLO_LOOP) {
-            GTaskHello *task_ = new GTaskHello(p_resp_taskq);
+            boost::shared_ptr<GTaskHello> task_(new GTaskHello(p_resp_taskq));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
             p_destq->EnqueueGTask(p_task, NULL);
@@ -282,8 +282,8 @@ static void ping_pong_timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             << " MaxEvents: " << p_thread_info->max_events
             << std::endl;
 
-        GTaskPing *task_ =
-                new GTaskPing(p_resp_taskq, "ping");
+        boost::shared_ptr<GTaskPing> task_(
+                new GTaskPing(p_resp_taskq, "ping"));
         p_destq->EnqueueGTask(task_, NULL);
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Dest Thread: " << thread_indx
@@ -760,7 +760,7 @@ static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
             << " MaxEvents: " << FLAGS_max_events
             << std::endl;
 
-        GTask* p_task = new GTaskHello(p_resp_taskq);
+        GTaskSharedPtr p_task(new GTaskHello(p_resp_taskq));
         p_destq->EnqueueGTask(p_task);
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Num tasks enqueued " << p_destq->num_enqueue()
