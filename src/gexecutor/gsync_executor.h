@@ -24,13 +24,13 @@ class GSyncWorkerThread;
 
 class GSyncExecutor: public GExecutor {
 public:
-    GSyncExecutor(GTaskQ* taskq,
+    GSyncExecutor(GTaskQSharedPtr taskq,
                   size_t num_workers = 4);
 
     virtual ~GSyncExecutor();
     virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
     virtual gerror_code_t Shutdown();
-    virtual GTaskQ* taskq() {
+    virtual GTaskQSharedPtr taskq() {
         return p_taskq_;
     }
     /**

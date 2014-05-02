@@ -23,6 +23,9 @@ class GTask;
 class GExecutor;
 class GTaskQ;
 
+typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
+
+
 /**
  * This is the task interface
  *
@@ -35,7 +38,7 @@ public:
      * @param response_queue_: This is the queue for sending back response
      * for this task
      */
-    explicit GTask(GTaskQ* response_queue_);
+    explicit GTask(GTaskQSharedPtr response_queue_);
     virtual ~GTask();
 
     /**
@@ -56,7 +59,7 @@ public:
         return 0;
     }
 
-    void set_exec_task_q(GTaskQ* execution_task_q) {
+    void set_exec_task_q(GTaskQSharedPtr execution_task_q) {
         assert(exec_task_q_ == NULL);
         exec_task_q_ = execution_task_q;
     }
@@ -65,8 +68,8 @@ public:
         executor_ = executor;
     }
 protected:
-    GTaskQ* resp_task_q_;
-    GTaskQ* exec_task_q_;
+    GTaskQSharedPtr resp_task_q_;
+    GTaskQSharedPtr exec_task_q_;
     GExecutor* executor_;
 private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTask);
@@ -136,6 +139,6 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTaskQ);
 };
 
-typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
+//typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
 
 #endif /* GTASKQ_H_ */

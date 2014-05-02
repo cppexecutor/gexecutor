@@ -8,7 +8,7 @@
 #include "gsync_worker_thread.h"
 
 GSyncWorkerThread::GSyncWorkerThread(GSyncExecutor* sync_executor,
-                                     GTaskQ* taskq,
+                                     GTaskQSharedPtr taskq,
                                      const std::string& worker_id)
     : sync_executor_(sync_executor), taskq_(taskq), thread_id_(),
       worker_id_(worker_id), event_base_(NULL), async_executor_(NULL)  {

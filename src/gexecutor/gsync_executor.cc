@@ -10,7 +10,7 @@
 #include <set>
 
 
-GSyncExecutor::GSyncExecutor(GTaskQ* taskq,
+GSyncExecutor::GSyncExecutor(GTaskQSharedPtr taskq,
                              size_t num_workers)
     : GExecutor(GExecutorType::SYNC, taskq), num_workers_(num_workers) {
 }

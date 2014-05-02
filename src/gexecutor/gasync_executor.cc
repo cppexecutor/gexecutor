@@ -12,7 +12,7 @@
 #include <glog/logging.h>
 
 GAsyncExecutor::GAsyncExecutor(struct event_base *event_base,
-                               GTaskQ *taskq)
+                               GTaskQSharedPtr taskq)
     : GExecutor(GExecutorType::ASYNC, taskq), event_base_(event_base),
       p_taskq_ev_(NULL), p_timer_ev_(NULL), taskq_timeout_(),
       timer_timeout_() {
@@ -41,7 +41,7 @@ static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
     char msg[4096];
     ssize_t num_bytes = 0;
     GAsyncExecutor *executor = static_cast<GAsyncExecutor *>(arg);
-    GTaskQ *p_taskq = executor->taskq();
+    GTaskQSharedPtr p_taskq = executor->taskq();
     snprintf(msg, 128, "Got an event on socket %d:%s%s%s%s Taskq[%p]",
              (int) fd,
              (what&EV_TIMEOUT) ? " timeout" : "",
@@ -82,7 +82,7 @@ static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
 
 class GTaskCheckTaskQ : public GTask {
 public:
-    GTaskCheckTaskQ(GTaskQ* taskq)
+    GTaskCheckTaskQ(GTaskQSharedPtr taskq)
     : GTask(taskq) {
     }
     virtual ~GTaskCheckTaskQ() {
@@ -90,7 +90,7 @@ public:
     }
 protected:
     virtual gerror_code_t Execute() {
-        VLOG(GEXECUTOR_TRACE) << "Hello Task" << std::endl;
+        VLOG(GEXECUTOR_TRACE) << "Task Q working fine" << std::endl;
         //delete this;
         return 0;
     }
@@ -98,18 +98,12 @@ protected:
 
 
 static void check_taskq_cb(evutil_socket_t fd, short what, void *arg) {
-    //struct event *timer_ev = *(static_cast<struct event**>(arg));
-    GAsyncExecutor *executor = *(static_cast<GAsyncExecutor **>(arg));
+    GAsyncExecutor *executor = static_cast<GAsyncExecutor *>(arg);
     VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": checking task callback"
             << executor->taskq() << arg << std::endl;
-
-    //GTask* p_task = new GTaskCheckTaskQ(taskq);
-
-    VLOG(GEXECUTOR_TRACE) << __FUNCTION__ <<
-            ": created check taskq callback \n";
-
-    //taskq->EnqueueGTask(p_task, NULL);
-
+    GTaskSharedPtr check_task(new GTaskCheckTaskQ(executor->taskq()));
+    VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": check taskq callback \n";
+    executor->taskq()->EnqueueGTask(check_task, NULL);
     //event_del(timer_ev);
 }
 
@@ -121,18 +115,17 @@ gerror_code_t GAsyncExecutor::Initialize() {
      * Add event for reading from the queue
      */
 
-    p_taskq_ev_ =
-            event_new(event_base_,
-                      p_taskq_->read_fd(),
-                      (EV_READ|EV_PERSIST),
-                      taskq_cb,
-                      this);
+    p_taskq_ev_ = event_new(event_base_,
+                            p_taskq_->read_fd(),
+                            (EV_READ|EV_PERSIST),
+                            taskq_cb,
+                            this);
     assert(p_taskq_ev_);
     VLOG(GEXECUTOR_TRACE) << "Setup Read event for pipe \n";
 
     event_add(p_taskq_ev_, &taskq_timeout_);
 
-    void *timer_arg = taskq();
+    void *timer_arg = static_cast<void *>(this);
 
     p_timer_ev_ = evtimer_new(event_base_,
                               check_taskq_cb,

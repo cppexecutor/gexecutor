@@ -18,7 +18,7 @@ public:
     gerror_code_t DestroyExecutor(const std::string& gexecutor_id);
     GExecutor* CreateAsyncExecutor(
             const std::string& executor_id,
-            GTaskQ *p_taskq,
+            GTaskQSharedPtr p_taskq,
             struct event_base *async_event_base);
 
     GExecutor* CreateSyncExecutor(

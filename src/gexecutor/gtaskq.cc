@@ -22,7 +22,7 @@
 
 
 
-GTask::GTask(GTaskQ* response_queue)
+GTask::GTask(GTaskQSharedPtr response_queue)
     : resp_task_q_(response_queue), exec_task_q_(NULL),
       executor_(NULL) {
 }
@@ -178,7 +178,7 @@ GTaskSharedPtr GTaskQ::DequeueGTask() {
     if (p_task) {
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << p_task << std::endl;
-        p_task->set_exec_task_q(this);
+        p_task->set_exec_task_q(this->shared_from_this());
     } else {
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
                         << "TaskQ Empty" << this << std::endl;

@@ -43,21 +43,22 @@ gerror_code_t GExecutorService::DestroyExecutor(const std::string& gexecutor_id)
     }
     //p_gexec->Shutdown();
     if (p_gexec->type() == GExecutor::GExecutorType::SYNC) {
-        delete p_gexec->taskq();
+        //delete p_gexec->taskq();
     }
     delete p_gexec;
     return 0;
 }
 
 GExecutor* GExecutorService::CreateAsyncExecutor(
-        const std::string& executor_id, GTaskQ* p_taskq,
+        const std::string& executor_id, GTaskQSharedPtr p_taskq,
         struct event_base* async_event_base) {
 
     DestroyExecutor(executor_id);
 
     pthread_mutex_unlock(&gexecutor_lock_);
-    if (p_taskq == NULL) {
-        p_taskq = new GTaskQ();
+    if (p_taskq == 0) {
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        p_taskq = new_task_q;
     }
     GAsyncExecutor* p_executor =
             new GAsyncExecutor(async_event_base,
@@ -72,7 +73,7 @@ GExecutor* GExecutorService::CreateAsyncExecutor(
 GExecutor* GExecutorService::CreateSyncExecutor(const std::string& executor_id,
                                                 size_t num_workers) {
     DestroyExecutor(executor_id);
-    GTaskQ* p_taskq = new GTaskQ();
+    GTaskQSharedPtr p_taskq(new GTaskQ());
     GSyncExecutor* p_executor = new GSyncExecutor(p_taskq, num_workers);
     p_executor->Initialize();
     pthread_mutex_lock(&gexecutor_lock_);

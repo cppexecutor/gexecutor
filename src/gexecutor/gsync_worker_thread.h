@@ -17,7 +17,7 @@ class GSyncExecutor;
 class GSyncWorkerThread {
 public:
     GSyncWorkerThread(GSyncExecutor *sync_executor,
-                      GTaskQ *taskq,
+                      GTaskQSharedPtr taskq,
                       const std::string& worker_id);
     gerror_code_t Initialize();
     void Shutdown();
@@ -25,7 +25,7 @@ public:
     struct event_base* event_base() {
         return event_base_;
     }
-    GTaskQ* taskq() {
+    GTaskQSharedPtr taskq() {
         return taskq_;
     }
     void SetupEventLoop();
@@ -34,7 +34,7 @@ public:
     }
 private:
     GSyncExecutor *sync_executor_;
-    GTaskQ* taskq_;
+    GTaskQSharedPtr taskq_;
     pthread_t thread_id_;
     std::string worker_id_;
     struct event_base *event_base_;

@@ -12,7 +12,7 @@
 
 GExecutor::GExecutor(GExecutorType type,
                      //struct event_base *event_base,
-                     GTaskQ* taskq)
+                     GTaskQSharedPtr taskq)
     : //event_base_(event_base),
       gexec_type_(type), p_taskq_(taskq),
       num_enqueue_(0), num_dequeue_(0), num_task_with_response_(0),

@@ -13,7 +13,7 @@
 class GAsyncExecutor : public GExecutor {
 public:
     GAsyncExecutor(struct event_base *event_base,
-                   GTaskQ *taskq);
+                   GTaskQSharedPtr taskq);
     virtual ~GAsyncExecutor();
     virtual gerror_code_t Initialize();
     virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
@@ -22,7 +22,7 @@ public:
     /**
      *  This is used
      */
-    virtual GTaskQ* taskq() {
+    virtual GTaskQSharedPtr taskq() {
         return p_taskq_;
     }
     virtual gerror_code_t Shutdown() {

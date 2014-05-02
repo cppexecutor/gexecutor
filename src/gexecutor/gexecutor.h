@@ -46,7 +46,7 @@
 class GTask;
 class GTaskQ;*/
 
-class GExecutor {
+class GExecutor : public boost::enable_shared_from_this<GExecutor>{
  public:
     enum GExecutorType {
         ASYNC = 0,
@@ -69,7 +69,7 @@ class GExecutor {
      * used to enqueue tasks for this execution block.
      * @return
      */
-    virtual GTaskQ* taskq() {
+    virtual GTaskQSharedPtr taskq() {
         return p_taskq_;
     }
 
@@ -86,9 +86,9 @@ class GExecutor {
  protected:
     // struct event_base *event_base_;
     GExecutor(GExecutorType type,
-              GTaskQ* taskq);
+              GTaskQSharedPtr taskq);
     GExecutorType gexec_type_;
-    GTaskQ *p_taskq_;
+    GTaskQSharedPtr p_taskq_;
     uint64_t num_enqueue_;
     uint64_t num_dequeue_;
     uint64_t num_task_with_response_;

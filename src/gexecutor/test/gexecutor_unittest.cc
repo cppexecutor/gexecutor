@@ -102,7 +102,7 @@ TEST_F(GExecutorTest, SampleSmoke) {
 
 
 TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
-    GTaskQ* taskq = new GTaskQ();
+    GTaskQSharedPtr taskq(new GTaskQ());
 
     GExecutor *async_engine =
             new GAsyncExecutor(event_base_, taskq);
@@ -115,7 +115,7 @@ TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
 
     delete async_engine;
     delete sync_engine;
-    delete taskq;
+    //delete taskq;
 }
 
 
@@ -134,7 +134,7 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
     GExecutor *p_exec = ThreadInfo::executor_list()[p_thread_info->thread_num];
     ASSERT_TRUE(p_exec != NULL);
 
-    GTaskQ *p_resp_taskq = p_exec->taskq();
+    GTaskQSharedPtr p_resp_taskq = p_exec->taskq();
 
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
         << "Thread: " << p_thread_info->thread_num << " "
@@ -157,7 +157,7 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
 
         GExecutor* dest_engine =
                 ThreadInfo::executor_list()[thread_indx];
-        GTaskQ *p_destq = dest_engine->taskq();
+        GTaskQSharedPtr p_destq = dest_engine->taskq();
 
         if ((p_thread_info->task_type == ThreadInfo::HELLO) &&
             (p_destq->num_enqueue() >=
@@ -249,7 +249,7 @@ static void ping_pong_timer_cb_func(evutil_socket_t fd, short what, void *arg) {
         return;
     }
 
-    GTaskQ *p_resp_taskq =
+    GTaskQSharedPtr p_resp_taskq =
             ThreadInfo::executor_list()[p_thread_info->thread_num]->taskq();
 
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
@@ -272,7 +272,7 @@ static void ping_pong_timer_cb_func(evutil_socket_t fd, short what, void *arg) {
 
         GExecutor* dest_engine =
                 ThreadInfo::executor_list()[thread_indx];
-        GTaskQ *p_destq = dest_engine->taskq();
+        GTaskQSharedPtr p_destq = dest_engine->taskq();
 
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Thread: " << p_thread_info->thread_num
@@ -420,7 +420,8 @@ TEST_F(GExecutorTest, InitializeAsyncSmoke) {
     for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
         tinfo[tnum].thread_num = tnum;
         tinfo[tnum].max_events = FLAGS_max_events;
-        tinfo[tnum].taskq = new GTaskQ();
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        tinfo[tnum].taskq = new_task_q;
         rc = tinfo[tnum].taskq->Initialize();
         tinfo[tnum].start_routine = timer_cb_func;
         tinfo[tnum].task_type = ThreadInfo::HELLO;
@@ -477,7 +478,8 @@ TEST_F(GExecutorTest, InitializeAsyncPingPongSmoke) {
     for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
         tinfo[tnum].thread_num = tnum;
         tinfo[tnum].max_events = FLAGS_max_events;
-        tinfo[tnum].taskq = new GTaskQ();
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        tinfo[tnum].taskq = new_task_q;
         tinfo[tnum].start_routine = ping_pong_timer_cb_func;
         tinfo[tnum].task_type = ThreadInfo::PINGPONG;
         rc = tinfo[tnum].taskq->Initialize();
@@ -536,7 +538,8 @@ TEST_F(GExecutorTest, InitializeSyncSmoke) {
     for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
         tinfo[tnum].thread_num = tnum;
         tinfo[tnum].max_events = FLAGS_max_events;
-        tinfo[tnum].taskq = new GTaskQ();
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        tinfo[tnum].taskq = new_task_q;
         rc = tinfo[tnum].taskq->Initialize();
         tinfo[tnum].start_routine = timer_cb_func;
         tinfo[tnum].task_type = ThreadInfo::HELLO;
@@ -595,7 +598,8 @@ TEST_F(GExecutorTest, ASyncServiceSmoke) {
     for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
         tinfo[tnum].thread_num = tnum;
         tinfo[tnum].max_events = FLAGS_max_events;
-        tinfo[tnum].taskq = new GTaskQ();
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        tinfo[tnum].taskq = new_task_q;
         rc = tinfo[tnum].taskq->Initialize();
         tinfo[tnum].start_routine = timer_cb_func;
         tinfo[tnum].task_type = ThreadInfo::HELLO;
@@ -655,7 +659,8 @@ TEST_F(GExecutorTest, ASyncLoopTestSmoke) {
     for (int tnum = 0; tnum < FLAGS_num_threads; tnum++) {
         tinfo[tnum].thread_num = tnum;
         tinfo[tnum].max_events = FLAGS_max_events;
-        tinfo[tnum].taskq = new GTaskQ();
+        GTaskQSharedPtr new_task_q(new GTaskQ());
+        tinfo[tnum].taskq = new_task_q;
         rc = tinfo[tnum].taskq->Initialize();
         tinfo[tnum].start_routine = timer_cb_func;
         tinfo[tnum].task_type = ThreadInfo::HELLO_LOOP;
@@ -742,7 +747,7 @@ static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
         return;
     }
 
-    GTaskQ *p_resp_taskq = p_app->async->taskq();
+    GTaskQSharedPtr p_resp_taskq = p_app->async->taskq();
 
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
         << "Async: "
@@ -751,7 +756,7 @@ static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
         << " numDeQ: " << p_resp_taskq->num_dequeue()
         << "\n";
 
-    GTaskQ *p_destq = p_app->sync->taskq();
+    GTaskQSharedPtr p_destq = p_app->sync->taskq();
 
     if (p_destq->num_enqueue() < FLAGS_max_events) {
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
@@ -794,9 +799,9 @@ static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
 
 
 TEST_F(GSyncExecutorTest, SyncWorkerSmoke) {
-    GTaskQ* sync_taskq = new GTaskQ();
+    GTaskQSharedPtr sync_taskq(new GTaskQ());
     sync_taskq->Initialize();
-    GTaskQ* async_taskq = new GTaskQ();
+    GTaskQSharedPtr async_taskq(new GTaskQ());
     async_taskq->Initialize();
     GSyncExecutor *sync_engine =
             new GSyncExecutor(sync_taskq);

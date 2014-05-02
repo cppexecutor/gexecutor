@@ -44,7 +44,7 @@ private:
 
 class GTaskHello : public GTask {
 public:
-    GTaskHello(GTaskQ* taskq)
+    GTaskHello(GTaskQSharedPtr taskq)
     : GTask(taskq), id_(0) {
     }
     virtual ~GTaskHello() {
@@ -66,7 +66,7 @@ private:
 
 class GTaskPing : public GTask {
 public:
-    GTaskPing(GTaskQ* resp_task_q, const std::string& msg)
+    GTaskPing(GTaskQSharedPtr resp_task_q, const std::string& msg)
         : GTask(resp_task_q), id_(0), msg_(msg) {
     }
     virtual ~GTaskPing() {
@@ -87,7 +87,7 @@ private:
 
 class GTaskCheckTaskQ : public GTask {
 public:
-    GTaskCheckTaskQ(GTaskQ* taskq)
+    GTaskCheckTaskQ(GTaskQSharedPtr taskq)
     : GTask(taskq), id_(0) {
     }
     virtual ~GTaskCheckTaskQ() {
@@ -119,7 +119,7 @@ public:
     pthread_t thread_id;        /* ID returned by pthread_create() */
     int       thread_num;       /* Application-defined thread # */
     int       max_events;
-    GTaskQ*   taskq;
+    GTaskQSharedPtr   taskq;
     static    int num_queues;
     struct event *timer_ev;
     struct event_base* async_base;
