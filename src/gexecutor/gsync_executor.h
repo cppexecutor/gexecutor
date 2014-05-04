@@ -21,6 +21,8 @@
 #include "gsync_worker_thread.h"
 
 class GSyncWorkerThread;
+typedef boost::shared_ptr<GSyncWorkerThread> GSyncWorkerThreadSharedPtr;
+
 
 class GSyncExecutor: public GExecutor {
 public:
@@ -40,7 +42,7 @@ public:
     gerror_code_t Initialize();
 private:
     size_t num_workers_;
-    std::set<GSyncWorkerThread *> workers_;
+    std::set<GSyncWorkerThreadSharedPtr> workers_;
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncExecutor);
 };
 

@@ -30,8 +30,8 @@ gerror_code_t GSyncExecutor::Initialize() {
 
     for (size_t thindex = 0; thindex < num_workers_; thindex++) {
         std::string worker_id = std::to_string(thindex);
-        GSyncWorkerThread *p_worker =
-                new GSyncWorkerThread(this, p_taskq_, worker_id);
+        GSyncWorkerThreadSharedPtr p_worker(
+                new GSyncWorkerThread(this, p_taskq_, worker_id));
         p_worker->Initialize();
         workers_.insert(p_worker);
     }
@@ -39,10 +39,10 @@ gerror_code_t GSyncExecutor::Initialize() {
 }
 
 gerror_code_t GSyncExecutor::Shutdown() {
-    std::set<GSyncWorkerThread *>::iterator itr;
-    for (itr = workers_.begin(); itr != workers_.end(); itr++) {
+    for (auto itr = workers_.begin(); itr != workers_.end(); itr++) {
         (*itr)->Shutdown();
-        delete (*itr);
+        workers_.erase(itr);
+        //delete (*itr);
     }
     return 0;
 }

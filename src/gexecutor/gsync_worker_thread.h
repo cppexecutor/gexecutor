@@ -14,7 +14,8 @@
 
 class GSyncExecutor;
 
-class GSyncWorkerThread {
+class GSyncWorkerThread :
+        public boost::enable_shared_from_this<GSyncWorkerThread> {
 public:
     GSyncWorkerThread(GSyncExecutor *sync_executor,
                       GTaskQSharedPtr taskq,
@@ -39,6 +40,7 @@ private:
     std::string worker_id_;
     struct event_base *event_base_;
     GAsyncExecutor *async_executor_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncWorkerThread);
 };
 
 #endif /* GSYNC_WORKER_THREAD_H_ */
