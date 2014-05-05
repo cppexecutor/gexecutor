@@ -15,7 +15,6 @@
 #include <set>
 #include <event2/event.h>
 #include <pthread.h>
-#include <pthread.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

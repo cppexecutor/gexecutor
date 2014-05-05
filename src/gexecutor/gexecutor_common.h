@@ -9,14 +9,15 @@
 #define GEXECUTOR_COMMON_H_
 
 
-#define GEXECUTOR_TRACE 0
-#define GEXECUTOR_ERROR 1
+
 #include <stdint.h>
 #include <glog/logging.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
 typedef int64_t gerror_code_t;
+#define GEXECUTOR_TRACE 0
+#define GEXECUTOR_ERROR 1
 
 #ifndef GEXECUTOR_LOG
 #define GEXECUTOR_LOG(level) \
