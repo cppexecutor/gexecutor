@@ -13,6 +13,8 @@
 #define GEXECUTOR_ERROR 1
 #include <stdint.h>
 #include <glog/logging.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 typedef int64_t gerror_code_t;
 
@@ -27,5 +29,12 @@ typedef int64_t gerror_code_t;
   TypeName(const TypeName&);                           \
   void operator=(const TypeName&)
 #endif
+
+class GTask;
+class GExecutor;
+class GTaskQ;
+
+typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
+typedef boost::shared_ptr<GExecutor> GExecutorSharedPtr;
 
 #endif /* GEXECUTOR_COMMON_H_ */

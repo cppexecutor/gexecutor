@@ -134,7 +134,7 @@ gerror_code_t GTaskQ::NotifyQ(size_t num_notifn,
 }
 
 gerror_code_t GTaskQ::EnqueueGTask(GTaskSharedPtr task,
-                                   GExecutor* executor_ctx) {
+                                   GExecutorSharedPtr executor_ctx) {
     /**
      * lock the queue and enqueue the task
      */

@@ -53,4 +53,7 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutor);
 };
 
+typedef boost::shared_ptr<GAsyncExecutor> GAsyncExecutorSharedPtr;
+
+
 #endif /* GASYN_CEXECUTOR_H_ */

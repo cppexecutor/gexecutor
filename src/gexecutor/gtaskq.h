@@ -16,14 +16,9 @@
 #include <glog/logging.h>
 #include <assert.h>
 #include <pthread.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
-class GTask;
-class GExecutor;
-class GTaskQ;
 
-typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
+
 
 
 /**
@@ -64,13 +59,13 @@ public:
         exec_task_q_ = execution_task_q;
     }
 
-    void set_executor(GExecutor *executor) {
+    void set_executor(GExecutorSharedPtr executor) {
         executor_ = executor;
     }
 protected:
     GTaskQSharedPtr resp_task_q_;
     GTaskQSharedPtr exec_task_q_;
-    GExecutor* executor_;
+    GExecutorSharedPtr executor_;
 private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTask);
 };
@@ -98,7 +93,7 @@ public:
      */
     virtual gerror_code_t Initialize();
     virtual gerror_code_t EnqueueGTask(GTaskSharedPtr task,
-                                       GExecutor* executor_ctx = NULL);
+                                       GExecutorSharedPtr executor_ctx);
     virtual GTaskSharedPtr DequeueGTask();
     virtual int read_fd() {
         return pipefds_[PIPE_FD_READ_INDX];
@@ -106,7 +101,7 @@ public:
     virtual int write_fd() {
         return pipefds_[PIPE_FD_WRITE_INDX];
     }
-    virtual void set_gexecutor(GExecutor* executor_ctx) {
+    virtual void set_gexecutor(GExecutorSharedPtr executor_ctx) {
         executor_ctx_ = executor_ctx;
     }
     int64_t num_enqueue() {
@@ -131,7 +126,7 @@ private:
         PIPE_NUM_FDS = PIPE_FD_WRITE_INDX
     };
     std::deque<GTaskSharedPtr> task_queue_;
-    GExecutor* executor_ctx_;
+    GExecutorSharedPtr executor_ctx_;
     size_t num_outstanding_notifn_;
     int pipefds_[PIPE_NUM_FDS];
     char *notfn_buffer_;

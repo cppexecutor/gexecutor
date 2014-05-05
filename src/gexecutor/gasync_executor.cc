@@ -34,13 +34,15 @@ GAsyncExecutor::~GAsyncExecutor() {
 }
 
 gerror_code_t GAsyncExecutor::EnQueueTask(GTaskSharedPtr task) {
-    return p_taskq_->EnqueueGTask(task, this);
+    GExecutorSharedPtr executor = shared_from_this();
+    return p_taskq_->EnqueueGTask(task, executor);
 }
 
 static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
     char msg[4096];
     ssize_t num_bytes = 0;
-    GAsyncExecutor *executor = static_cast<GAsyncExecutor *>(arg);
+    GAsyncExecutorSharedPtr executor =
+            *(static_cast<GAsyncExecutorSharedPtr *>(arg));
     GTaskQSharedPtr p_taskq = executor->taskq();
     snprintf(msg, 128, "Got an event on socket %d:%s%s%s%s Taskq[%p]",
              (int) fd,
