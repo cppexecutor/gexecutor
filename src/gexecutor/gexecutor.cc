@@ -21,7 +21,8 @@ GExecutor::GExecutor(GExecutorType type,
 }
 
 GExecutor::~GExecutor() {
-
+    GEXECUTOR_LOG(GEXECUTOR_ERROR)
+            << "GExecutor destructor called " << this << std::endl;
 }
 
 

@@ -41,7 +41,7 @@
  *
  */
 
-class GExecutor : public boost::enable_shared_from_this<GExecutor>{
+class GExecutor : public boost::enable_shared_from_this<GExecutor> {
  public:
     enum GExecutorType {
         ASYNC = 0,

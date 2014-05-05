@@ -43,6 +43,7 @@ public:
         //event_free(p_timer_ev_);
         p_timer_ev_ = 0;
     }
+
 protected:
     struct event_base *event_base_;
 private:
@@ -52,7 +53,6 @@ private:
     struct timeval timer_timeout_;
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutor);
 };
-
 typedef boost::shared_ptr<GAsyncExecutor> GAsyncExecutorSharedPtr;
 
 

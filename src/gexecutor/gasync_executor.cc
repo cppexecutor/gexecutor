@@ -34,15 +34,13 @@ GAsyncExecutor::~GAsyncExecutor() {
 }
 
 gerror_code_t GAsyncExecutor::EnQueueTask(GTaskSharedPtr task) {
-    GExecutorSharedPtr executor = shared_from_this();
-    return p_taskq_->EnqueueGTask(task, executor);
+    return p_taskq_->EnqueueGTask(task);
 }
 
 static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
     char msg[4096];
     ssize_t num_bytes = 0;
-    GAsyncExecutorSharedPtr executor =
-            *(static_cast<GAsyncExecutorSharedPtr *>(arg));
+    GExecutor* executor = static_cast<GExecutor *>(arg);
     GTaskQSharedPtr p_taskq = executor->taskq();
     snprintf(msg, 128, "Got an event on socket %d:%s%s%s%s Taskq[%p]",
              (int) fd,
@@ -105,14 +103,14 @@ static void check_taskq_cb(evutil_socket_t fd, short what, void *arg) {
             << executor->taskq() << arg << std::endl;
     GTaskSharedPtr check_task(new GTaskCheckTaskQ(executor->taskq()));
     VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": check taskq callback \n";
-    executor->taskq()->EnqueueGTask(check_task, NULL);
+    executor->taskq()->EnqueueGTask(check_task);
     //event_del(timer_ev);
 }
 
 
 gerror_code_t GAsyncExecutor::Initialize() {
     // p_taskq_->Initialize();
-
+    //executor_shared_ptr_ = shared_from_this();
     /**
      * Add event for reading from the queue
      */
@@ -121,7 +119,7 @@ gerror_code_t GAsyncExecutor::Initialize() {
                             p_taskq_->read_fd(),
                             (EV_READ|EV_PERSIST),
                             taskq_cb,
-                            this);
+                            static_cast<void *>(this));
     assert(p_taskq_ev_);
     VLOG(GEXECUTOR_TRACE) << "Setup Read event for pipe \n";
 

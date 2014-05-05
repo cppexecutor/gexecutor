@@ -59,13 +59,13 @@ public:
         exec_task_q_ = execution_task_q;
     }
 
-    void set_executor(GExecutorSharedPtr executor) {
+    void set_executor(GExecutor* executor) {
         executor_ = executor;
     }
 protected:
     GTaskQSharedPtr resp_task_q_;
     GTaskQSharedPtr exec_task_q_;
-    GExecutorSharedPtr executor_;
+    GExecutor* executor_;
 private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTask);
 };
@@ -92,8 +92,7 @@ public:
      * @return
      */
     virtual gerror_code_t Initialize();
-    virtual gerror_code_t EnqueueGTask(GTaskSharedPtr task,
-                                       GExecutorSharedPtr executor_ctx);
+    virtual gerror_code_t EnqueueGTask(GTaskSharedPtr task);
     virtual GTaskSharedPtr DequeueGTask();
     virtual int read_fd() {
         return pipefds_[PIPE_FD_READ_INDX];
@@ -101,7 +100,7 @@ public:
     virtual int write_fd() {
         return pipefds_[PIPE_FD_WRITE_INDX];
     }
-    virtual void set_gexecutor(GExecutorSharedPtr executor_ctx) {
+    virtual void set_gexecutor(GExecutor* executor_ctx) {
         executor_ctx_ = executor_ctx;
     }
     int64_t num_enqueue() {
@@ -126,7 +125,7 @@ private:
         PIPE_NUM_FDS = PIPE_FD_WRITE_INDX
     };
     std::deque<GTaskSharedPtr> task_queue_;
-    GExecutorSharedPtr executor_ctx_;
+    GExecutor* executor_ctx_;
     size_t num_outstanding_notifn_;
     int pipefds_[PIPE_NUM_FDS];
     char *notfn_buffer_;

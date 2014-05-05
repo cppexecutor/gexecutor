@@ -77,7 +77,7 @@ gerror_code_t GTaskPing::Execute() {
                 new GTaskPing(exec_task_q_, new_msg));
         p_resp_task->set_id(id_ + 1);
         GTaskSharedPtr p_task = p_resp_task;
-        resp_task_q_->EnqueueGTask(p_task, GExecutorSharedPtr(NULL));
+        resp_task_q_->EnqueueGTask(p_task);
     }
 //#delete this;
     return 0;
@@ -183,19 +183,19 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             p_task = task_;
             GEXECUTOR_LOG(GEXECUTOR_TRACE)
                 << "Shared ptr use count" << p_task.use_count() << std::endl;
-            p_destq->EnqueueGTask(p_task, GExecutorSharedPtr(NULL));
+            p_destq->EnqueueGTask(p_task);
         } else if (p_thread_info->task_type == ThreadInfo::PINGPONG) {
             boost::shared_ptr<GTaskPing>task_(new GTaskPing(p_resp_taskq,
                                                             "ping"));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
-            p_destq->EnqueueGTask(p_task, GExecutorSharedPtr(NULL));
+            p_destq->EnqueueGTask(p_task);
 
         } else if (p_thread_info->task_type == ThreadInfo::HELLO_LOOP) {
             boost::shared_ptr<GTaskHello> task_(new GTaskHello(p_resp_taskq));
             task_->set_id(p_thread_info->thread_num);
             p_task = task_;
-            p_destq->EnqueueGTask(p_task, GExecutorSharedPtr(NULL));
+            p_destq->EnqueueGTask(p_task);
         }
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Dest Thread: " << thread_indx
@@ -287,7 +287,7 @@ static void ping_pong_timer_cb_func(evutil_socket_t fd, short what, void *arg) {
 
         boost::shared_ptr<GTaskPing> task_(
                 new GTaskPing(p_resp_taskq, "ping"));
-        p_destq->EnqueueGTask(task_, NULL);
+        p_destq->EnqueueGTask(task_);
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Dest Thread: " << thread_indx
             << " Num tasks enqueued " << p_destq->num_enqueue()
@@ -769,7 +769,7 @@ static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
             << std::endl;
 
         GTaskSharedPtr p_task(new GTaskHello(p_resp_taskq));
-        p_destq->EnqueueGTask(p_task, GExecutorSharedPtr(NULL));
+        p_destq->EnqueueGTask(p_task);
         GEXECUTOR_LOG(GEXECUTOR_TRACE)
             << " Num tasks enqueued " << p_destq->num_enqueue()
             << " Num tasks dequeued " << p_destq->num_dequeue()
