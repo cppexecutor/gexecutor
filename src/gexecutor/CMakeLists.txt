@@ -20,4 +20,5 @@ install(TARGETS gexecutor
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
 add_subdirectory(test)
+add_subdirectory(sample)
 
