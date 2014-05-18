@@ -46,4 +46,6 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncExecutor);
 };
 
+typedef boost::shared_ptr<GSyncExecutor> GSyncExecutorSharedPtr;
+
 #endif /* GSYNC_EXECUTOR_H_ */

@@ -97,5 +97,4 @@ class GExecutor : public boost::enable_shared_from_this<GExecutor> {
 };
 
 
-
 #endif /* GEXECUTOR_H_ */

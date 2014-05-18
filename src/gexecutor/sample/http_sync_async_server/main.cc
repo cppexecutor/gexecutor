@@ -15,7 +15,11 @@ int
 main(int argc, char **argv)
 {
     google::InitGoogleLogging(argv[0]);
+    FLAGS_logtostderr = 0;
+    google::ParseCommandLineFlags(&argc, &argv, true);
+
     google::FlushLogFiles(google::GLOG_INFO);
+
     cout << "Starting Server" << std::endl;
     HTTPHybridServer httpd(FLAGS_num_sync_workers);
     cout << "Initializing\n";
