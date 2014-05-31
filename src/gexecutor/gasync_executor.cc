@@ -69,7 +69,7 @@ static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
         for (int num_tasks = 0; num_tasks < num_bytes; num_tasks++) {
             GTaskSharedPtr p_task = p_taskq->DequeueGTask();
             GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                << "Executing task " << p_task << std::endl;
+                << "Executing task " << p_task->DebugString() << std::endl;
             if (p_task) {
                 p_task->set_executor(executor);
                 p_task->Execute();

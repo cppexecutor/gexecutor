@@ -34,6 +34,9 @@ public:
      * for this task
      */
     explicit GTask(GTaskQSharedPtr response_queue_);
+    explicit GTask(GTaskQSharedPtr response_queue_,
+                   const std::string& debug_str);
+
     virtual ~GTask();
 
     /**
@@ -62,16 +65,18 @@ public:
     void set_executor(GExecutor* executor) {
         executor_ = executor;
     }
+    virtual const std::string& DebugString() {
+        return debug_str_;
+    }
 protected:
     GTaskQSharedPtr resp_task_q_;
     GTaskQSharedPtr exec_task_q_;
     GExecutor* executor_;
+    std::string debug_str_;
+    gerror_code_t error_code_;
 private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GTask);
 };
-
-typedef boost::shared_ptr<GTask> GTaskSharedPtr;
-
 
 /**
  *

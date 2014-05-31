@@ -82,22 +82,30 @@ void http_req_cleanup(char *decoded_path,
 
 void http_async_request_cb(struct evhttp_request * req, void *arg) {
     HTTPHybridServer *http_server = static_cast<HTTPHybridServer*>(arg);
-    http_server->handle_request(req);
+    http_server->handle_async_request(req);
     HTTPD_LOG(HTTPD_LOG_TRACE) << "Async handler called:" << std::endl;
 }
 
-void HTTPHybridServer::handle_request(struct evhttp_request * req) {
+void HTTPHybridServer::handle_async_request(struct evhttp_request * req) {
     boost::shared_ptr<HTTPAsyncRequestTask> task(
             new HTTPAsyncRequestTask(this, req));
     async_executor_->EnQueueTask(task);
 }
 
-
+void HTTPHybridServer::handle_sync_request(struct evhttp_request * req) {
+    if (req == NULL) {
+        HTTPD_ERR(HTTPD_LOG_ERROR) << "Reques is null:" << std::endl;
+        return;
+    }
+    boost::shared_ptr<HTTPSyncRequestTask> task(
+            new HTTPSyncRequestTask(this, req));
+    sync_executor_->EnQueueTask(task);
+}
 
 void http_sync_request_cb(struct evhttp_request * req, void *arg) {
     HTTPHybridServer *http_server = static_cast<HTTPHybridServer*>(arg);
-    const std::string& docroot = http_server->docroot();
-    HTTPD_LOG(HTTPD_LOG_TRACE) << "DocRoot:" << docroot << std::endl;
+    http_server->handle_sync_request(req);
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "Sync handler called:" << std::endl;
 
 }
 
@@ -264,7 +272,10 @@ gerror_code_t HTTPAsyncRequestTask::Execute() {
         return 0;
     }
     path = evhttp_uri_get_path(decoded_);
-    if (!path) path = "/";
+    if (!path) {
+        path = "/";
+    }
+
     decoded_path_ = evhttp_uridecode(path, 0, NULL);
     if (decoded_path_ == NULL) {
         evhttp_send_error(req_, HTTP_BADREQUEST, 0);
@@ -302,5 +313,103 @@ gerror_code_t HTTPAsyncRequestTask::Execute() {
 
     evhttp_send_reply(req_, 200, "OK", evb_);
     HTTPD_LOG(HTTPD_LOG_TRACE) << "sending file" << whole_path << std::endl;
+    return 0;
+}
+
+
+
+
+gerror_code_t HTTPSyncRequestTask::Execute() {
+    const std::string& docroot = http_server_->docroot();
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "DocRoot:" << docroot << std::endl;
+
+    if (req_ == NULL) {
+        evhttp_send_error(req_, HTTP_BADREQUEST, 0);
+        return 0;
+    }
+
+    const char *uri = evhttp_request_get_uri(req_);
+    const char *path = NULL;
+    char whole_path[2048];
+
+    if (evhttp_request_get_command(req_) != EVHTTP_REQ_GET) {
+        evhttp_send_error(req_, HTTP_BADREQUEST, 0);
+        HTTPD_LOG(HTTPD_LOG_TRACE)
+                       << "It's not a good URI. Sending BADREQUEST\n";
+        return 0;
+    }
+    decoded_ = evhttp_uri_parse(uri);
+    if (!decoded_) {
+        HTTPD_LOG(HTTPD_LOG_TRACE)
+                << "It's not a good URI. Sending BADREQUEST\n";
+        evhttp_send_error(req_, HTTP_BADREQUEST, 0);
+        return 0;
+    }
+    path = evhttp_uri_get_path(decoded_);
+    if (!path) {
+        path = "/";
+    }
+
+    decoded_path_ = evhttp_uridecode(path, 0, NULL);
+    if (decoded_path_ == NULL) {
+        evhttp_send_error(req_, HTTP_BADREQUEST, 0);
+        return 0;
+    }
+
+    file_path_ = decoded_path_;
+    file_path_ = file_path_.substr(5, file_path_.length());
+    evutil_snprintf(whole_path, 2048, "%s/%s", docroot.c_str(),
+                    file_path_.c_str());
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "filepath" << whole_path << std::endl;
+
+    const char *type = guess_content_type(decoded_path_);
+    evhttp_add_header(evhttp_request_get_output_headers(req_),
+                      "Content-Type", type);
+
+    /**
+     * Instead of sending response here create a new ask to response back.
+     */
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "filestat: " << whole_path
+            << " sending response task"
+            << std::endl;
+    boost::shared_ptr<HTTPSyncResponseTask> resp_task(
+                new HTTPSyncResponseTask(exec_task_q_, req_,
+                                         whole_path));
+    resp_task_q_->EnqueueGTask(resp_task);
+    return 0;
+}
+
+
+
+gerror_code_t HTTPSyncResponseTask::Execute() {
+    int fd = -1;
+    struct stat st;
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "sending response"
+            << whole_path_ << std::endl;
+    evb_ = evbuffer_new();
+
+    if (stat(whole_path_.c_str(), &st)<0) {
+        HTTPD_LOG(HTTPD_LOG_TRACE) << "filestat" << whole_path_ << " failed"
+                << std::endl;
+        evhttp_send_error(req_, HTTP_NOTFOUND, 0);
+        return 0;
+    }
+    if ((fd = open(whole_path_.c_str(), O_RDONLY)) < 0) {
+        HTTPD_LOG(HTTPD_LOG_TRACE) << "fileopen" << whole_path_ << " failed"
+                << std::endl;
+        evhttp_send_error(req_, HTTP_NOTFOUND, 0);
+        return 0;
+    }
+
+    if (fstat(fd, &st) < 0) {
+        /* Make sure the length still matches, now that we
+         * opened the file :/ */
+        evhttp_send_error(req_, HTTP_NOTFOUND, 0);
+        return 0;
+    }
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "adding file to buf" << std::endl;
+    evbuffer_add_file(evb_, fd, 0, st.st_size);
+    HTTPD_LOG(HTTPD_LOG_TRACE) << "sending reply" << std::endl;
+    evhttp_send_reply(req_, 200, "OK", evb_);
     return 0;
 }

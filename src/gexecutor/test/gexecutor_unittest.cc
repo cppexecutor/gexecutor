@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <gflags/gflags.h>
 #include <gexecutor_service.h>
+#include <deferred_task.h>
 
 using namespace std;
 DEFINE_int64(timeout_us, 100000, "timeout value in usecs for events");
@@ -835,7 +836,117 @@ TEST_F(GSyncExecutorTest, SyncWorkerSmoke) {
     return;
 }
 
+int deferred_hello() {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << "Deferred: "
+            << __FUNCTION__
+            << " Hello \n";
+    return 42;
+}
 
+void deferred_hello_cb(int result) {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << " Deferred: CB:"
+            << __FUNCTION__
+            << " Result should be 42: result: " << result << std::endl;
+}
+
+static void deferred_timer_cb(evutil_socket_t fd, short what, void *arg) {
+    HybridApp* p_app =
+            static_cast<HybridApp *>(arg);
+
+    if (!p_app) {
+        ASSERT_TRUE(p_app);
+        return;
+    }
+
+    GTaskQSharedPtr p_resp_taskq = p_app->async->taskq();
+
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+        << "Async: "
+        << __FUNCTION__
+        << " numEnQ: " << p_resp_taskq->num_enqueue()
+        << " numDeQ: " << p_resp_taskq->num_dequeue()
+        << "\n";
+
+    GTaskQSharedPtr p_destq = p_app->sync->taskq();
+
+    if (p_destq->num_enqueue() < FLAGS_max_events) {
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << " NumDestEnQ: " << p_destq->num_enqueue()
+            << " NumDestDeQ: " << p_destq->num_dequeue()
+            << " NumRespEnQ: " << p_resp_taskq->num_enqueue()
+            << " NumRespDeQ: " << p_resp_taskq->num_dequeue()
+            << " MaxEvents: " << FLAGS_max_events
+            << std::endl;
+
+        boost::shared_ptr<DeferredTask<int>> p_task(
+                new DeferredTask<int>(p_resp_taskq, deferred_hello));
+
+        p_task->set_callback(deferred_hello_cb);
+        p_destq->EnqueueGTask(p_task);
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << " Num tasks enqueued " << p_destq->num_enqueue()
+            << " Num tasks dequeued " << p_destq->num_dequeue()
+            << std::endl;
+    } else {
+        p_app->sync->Shutdown();
+        /**
+         * stop the engine as it has processed all events.
+         */
+        GEXECUTOR_LOG(GEXECUTOR_TRACE)
+                    <<"Shutdown of async thread"
+                    <<" Num DeQ: " << p_resp_taskq->num_dequeue()
+                    << std::endl;
+        p_app->async->Shutdown();
+        return;
+    }
+
+    // event_free(p_thread_info->timer_ev);
+    p_app->timer_ev =
+            event_new(p_app->async_base, -1, EV_TIMEOUT,
+                      deferred_timer_cb, p_app);
+    struct timeval timeout = { FLAGS_timeout_s, FLAGS_timeout_us };
+    event_add(p_app->timer_ev, &timeout);
+    return;
+}
+
+
+TEST_F(GSyncExecutorTest, DeferredSmoke) {
+    GTaskQSharedPtr sync_taskq(new GTaskQ());
+    sync_taskq->Initialize();
+    GTaskQSharedPtr async_taskq(new GTaskQ());
+    async_taskq->Initialize();
+    GSyncExecutor *sync_engine =
+            new GSyncExecutor(sync_taskq);
+
+    //this woudl start the workers.
+    sync_engine->Initialize();
+
+    GAsyncExecutor* async_engine =
+            new GAsyncExecutor(event_base_, async_taskq);
+
+    async_engine->Initialize();
+
+    HybridApp happ;
+    happ.async = async_engine;
+    happ.sync = sync_engine;
+    happ.async_base = event_base_;
+
+    struct timeval timeout = { FLAGS_timeout_s, FLAGS_timeout_us };
+    void *timer_arg = static_cast<void *>(&happ);
+    happ.timer_ev = event_new(event_base_,
+                        -1,
+                        EV_TIMEOUT,
+                        deferred_timer_cb,
+                        timer_arg);
+    event_add(happ.timer_ev, &timeout);
+    event_base_dispatch(event_base_);
+    event_free(happ.timer_ev);
+    delete async_engine;
+    delete sync_engine;
+    return;
+}
 
 
 

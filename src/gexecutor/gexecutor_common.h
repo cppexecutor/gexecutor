@@ -37,5 +37,6 @@ class GTaskQ;
 
 typedef boost::shared_ptr<GTaskQ> GTaskQSharedPtr;
 typedef boost::shared_ptr<GExecutor> GExecutorSharedPtr;
+typedef boost::shared_ptr<GTask> GTaskSharedPtr;
 
 #endif /* GEXECUTOR_COMMON_H_ */

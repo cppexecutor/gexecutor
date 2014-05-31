@@ -20,7 +20,7 @@ GSyncExecutor::~GSyncExecutor() {
 }
 
 gerror_code_t GSyncExecutor::EnQueueTask(GTaskSharedPtr task) {
-    return 0;
+    return p_taskq_->EnqueueGTask(task);
 }
 
 gerror_code_t GSyncExecutor::Initialize() {

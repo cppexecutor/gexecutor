@@ -11,4 +11,5 @@ set(HHS_MODULE_SRCS http_hybrid_server.cc main.cc)
 
 add_executable(${HHS_MODULE_NAME} ${HHS_MODULE_SRCS})
 	
-target_link_libraries(${HHS_MODULE_NAME} event gflags glog pthread dl gexecutor)
+target_link_libraries(${HHS_MODULE_NAME} event gflags glog pthread dl 
+    gexecutor)

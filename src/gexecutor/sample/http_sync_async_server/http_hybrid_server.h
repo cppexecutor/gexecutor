@@ -35,7 +35,11 @@ public:
     GTaskQSharedPtr async_taskq() {
         return async_taskq_;
     }
-    void handle_request(struct evhttp_request * req);
+    GTaskQSharedPtr sync_taskq() {
+        return sync_taskq_;
+    }
+    void handle_async_request(struct evhttp_request * req);
+    void handle_sync_request(struct evhttp_request * req);
 private:
     std::string docroot_;
     uint32_t num_sync_workers_;
@@ -76,6 +80,31 @@ private:
 };
 
 
+class HTTPSyncRequestTask : public GTask {
+public:
+    HTTPSyncRequestTask(HTTPHybridServer *http_server,
+                        struct evhttp_request *req)
+    : GTask(http_server->sync_taskq()), http_server_(http_server), req_(req),
+      file_path_(""), decoded_path_(NULL), decoded_(NULL) {
+        return;
+    }
+    virtual ~HTTPSyncRequestTask() {
+        if (decoded_)
+            evhttp_uri_free(decoded_);
+        if (decoded_path_)
+            free(decoded_path_);
+
+    }
+protected:
+    virtual gerror_code_t Execute();
+private:
+    const HTTPHybridServer *http_server_;
+    struct evhttp_request *req_;
+    std::string file_path_;
+    char* decoded_path_;
+    struct evhttp_uri *decoded_;
+};
+
 
 DECLARE_int32(num_sync_workers);
 #define HTTPD_LOG_TRACE 0
@@ -85,5 +114,32 @@ DECLARE_int32(num_sync_workers);
 #define HTTPD_LOG(level) \
     VLOG(level) << "HTTPD:[" << __FUNCTION__ << ":" << __LINE__ << "]"
 #endif
+
+#ifndef HTTPD_ERR
+#define HTTPD_ERR(level) \
+    VLOG(level) << "HTTPD ERR:[" << __FUNCTION__ << ":" << __LINE__ << "]"
+#endif
+
+class HTTPSyncResponseTask : public GTask {
+public:
+    HTTPSyncResponseTask(GTaskQSharedPtr executor_taskq,
+                         struct evhttp_request *req,
+                         const char* whole_path)
+    : GTask(executor_taskq, "HTTPSyncResponseTask"), req_(req),
+      whole_path_(whole_path) {
+        return;
+    }
+    virtual ~HTTPSyncResponseTask() {
+        if (evb_)
+            evbuffer_free(evb_);
+    }
+protected:
+    virtual gerror_code_t Execute();
+private:
+    const HTTPHybridServer *http_server_;
+    struct evhttp_request *req_;
+    struct evbuffer *evb_;
+    std::string whole_path_;
+};
 
 #endif /* HTTP_HYBRID_SERVER_H_ */

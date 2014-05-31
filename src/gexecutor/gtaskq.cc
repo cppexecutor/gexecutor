@@ -19,15 +19,28 @@
 #include <assert.h>
 #include "gtaskq.h"
 #include <glog/logging.h>
+#include <string>
 
 
 
 GTask::GTask(GTaskQSharedPtr response_queue)
     : resp_task_q_(response_queue), exec_task_q_(NULL),
-      executor_(NULL) {
+      executor_(NULL), debug_str_("") {
+    if (debug_str_ == "") {
+        char buf[16];
+        snprintf(buf, 16, "%p",this);
+        debug_str_ = buf;
+    }
 }
 
+GTask::GTask(GTaskQSharedPtr response_queue, const std::string& debug_str)
+    : resp_task_q_(response_queue), exec_task_q_(NULL),
+      executor_(NULL), debug_str_(debug_str), error_code_(0) {
+}
+
+
 GTask::~GTask() {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Destructor " << debug_str_ << std::endl;
     return;
 }
 
