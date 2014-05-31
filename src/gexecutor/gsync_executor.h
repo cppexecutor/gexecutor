@@ -39,7 +39,7 @@ public:
      * Creates workers in detached state and setup to work on the task queue.
      * @return
      */
-    gerror_code_t Initialize();
+    virtual gerror_code_t Initialize();
 private:
     size_t num_workers_;
     std::set<GSyncWorkerThreadSharedPtr> workers_;

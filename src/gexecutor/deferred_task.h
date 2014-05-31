@@ -38,6 +38,11 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(DeferredTask);
 };
 
+template<class CbArg>
+void deferred_cb(boost::function<void(CbArg)> callback_, CbArg result) {
+    callback_(result);
+}
+
 template <>
 class DeferredTask<void>: public GTask {
 public:
@@ -51,14 +56,23 @@ public:
     virtual gerror_code_t Execute() {
         try {
             task_fn_();
-            if (callback_ != NULL) {
-                callback_();
+            if (callback_ == NULL) {
+                return 0;
             }
+            GTaskSharedPtr p_task(
+                    new DeferredTask<void>(exec_task_q_, callback_));
+            resp_task_q_->EnqueueGTask(p_task);
         }
         catch(...) {
-            if (errback_ != NULL) {
-                errback_(errno);
+            if (errback_ == NULL) {
+                return 0;
             }
+            GTaskSharedPtr p_task(
+                    new DeferredTask<void>(exec_task_q_,
+                                           boost::bind(deferred_cb<gerror_code_t>,
+                                                       errback_,
+                                                       -errno)));
+            resp_task_q_->EnqueueGTask(p_task);
         }
         return 0;
     }
@@ -75,12 +89,6 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(DeferredTask);
 };
 
-
-template<class CbArg>
-void deferred_cb(boost::function<void(CbArg)> callback_, CbArg result) {
-    callback_(result);
-}
-
 template<class Rtype>
 gerror_code_t DeferredTask<Rtype>::Execute() {
     try {
@@ -88,20 +96,22 @@ gerror_code_t DeferredTask<Rtype>::Execute() {
         if (callback_ == NULL) {
             return 0;
         }
-        GTaskSharedPtr p_task(new DeferredTask<void>(exec_task_q_,
-                                                     boost::bind(deferred_cb<Rtype>,
-                                                                 callback_,
-                                                                 result)));
+        GTaskSharedPtr p_task(
+                new DeferredTask<void>(exec_task_q_,
+                                       boost::bind(deferred_cb<Rtype>,
+                                                   callback_,
+                                                   result)));
         resp_task_q_->EnqueueGTask(p_task);
     }
     catch(...) {
         if (errback_ == NULL) {
             return 0;
         }
-        GTaskSharedPtr p_task(new DeferredTask<void>(exec_task_q_,
-                                                     boost::bind(deferred_cb<gerror_code_t>,
-                                                                 errback_,
-                                                                 -errno)));
+        GTaskSharedPtr p_task(
+                new DeferredTask<void>(exec_task_q_,
+                                       boost::bind(deferred_cb<gerror_code_t>,
+                                                   errback_,
+                                                   -errno)));
         resp_task_q_->EnqueueGTask(p_task);
     }
     return 0;

@@ -14,20 +14,20 @@ class GExecutorService {
 public:
     GExecutorService();
     virtual ~GExecutorService();
-    void Initialize();
-    gerror_code_t DestroyExecutor(const std::string& gexecutor_id);
-    GExecutor* CreateAsyncExecutor(
+    gerror_code_t ShutdownExecutor(const std::string& gexecutor_id);
+    GExecutorSharedPtr CreateAsyncExecutor(
             const std::string& executor_id,
             GTaskQSharedPtr p_taskq,
             struct event_base *async_event_base);
 
-    GExecutor* CreateSyncExecutor(
+    GExecutorSharedPtr CreateSyncExecutor(
             const std::string& executor_id,
             size_t num_default_threads);
-    GExecutor* gexecutor(const std::string& gexecutor_id);
+
+    GExecutorSharedPtr gexecutor(const std::string& gexecutor_id);
 private:
-    pthread_mutex_t gexecutor_lock_;
-    std::unordered_map<std::string, GExecutor*> gexecutor_map_;
+    pthread_mutex_t gexecutor_svc_lock_;
+    std::unordered_map<std::string, GExecutorSharedPtr> gexecutor_map_;
 };
 
 #endif /* GEXECUTOR_SERVER_H_ */

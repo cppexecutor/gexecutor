@@ -78,6 +78,8 @@ class GExecutor : public boost::enable_shared_from_this<GExecutor> {
         return gexec_type_;
     }
 
+    virtual gerror_code_t Initialize() = 0;
+
  protected:
     // struct event_base *event_base_;
     GExecutor(GExecutorType type,

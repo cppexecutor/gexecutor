@@ -28,8 +28,6 @@ protected:
             GEXECUTOR_LOG(GEXECUTOR_TRACE) << "Event Base null\n";
             return;
         }
-        g_svc_.Initialize();
-
     }
     virtual void TearDown() {
         if (event_base_) {
@@ -125,12 +123,12 @@ public:
     struct event_base* async_base;
     void (*start_routine)(evutil_socket_t fd, short what, void *arg);
     GExecutorTestType task_type;
-    static std::vector<GExecutor *>& executor_list();
+    static std::vector<GExecutorSharedPtr>& executor_list();
     bool is_thread_stopped;
     bool ping_started;
     GExecutorService* p_svc;
 private:
-    static    std::vector<GExecutor*>* executor_list_;
+    static    std::vector<GExecutorSharedPtr> executor_list_;
 };
 
 

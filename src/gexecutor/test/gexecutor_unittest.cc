@@ -84,12 +84,8 @@ gerror_code_t GTaskPing::Execute() {
 }
 
 
-std::vector<GExecutor *>& ThreadInfo::executor_list() {
-    if (executor_list_ == NULL) {
-        executor_list_ =
-                new std::vector<GExecutor*>(FLAGS_num_threads);
-    }
-    return *executor_list_;
+std::vector<GExecutorSharedPtr>& ThreadInfo::executor_list() {
+    return executor_list_;
 }
 
 TEST_F(GExecutorTest, SampleSmoke) {
@@ -122,7 +118,7 @@ TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
 
 
 int ThreadInfo::num_queues = FLAGS_num_threads;
-std::vector<GExecutor*>* ThreadInfo::executor_list_ = 0;
+std::vector<GExecutorSharedPtr> ThreadInfo::executor_list_(FLAGS_num_threads);
 
 static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
     ThreadInfo* p_thread_info =
@@ -132,7 +128,8 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
         ASSERT_TRUE(p_thread_info);
         return;
     }
-    GExecutor *p_exec = ThreadInfo::executor_list()[p_thread_info->thread_num];
+    GExecutorSharedPtr p_exec =
+            ThreadInfo::executor_list()[p_thread_info->thread_num];
     ASSERT_TRUE(p_exec != NULL);
 
     GTaskQSharedPtr p_resp_taskq = p_exec->taskq();
@@ -156,7 +153,7 @@ static void timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             continue;
         }
 
-        GExecutor* dest_engine =
+        GExecutorSharedPtr dest_engine =
                 ThreadInfo::executor_list()[thread_indx];
         GTaskQSharedPtr p_destq = dest_engine->taskq();
 
@@ -271,7 +268,7 @@ static void ping_pong_timer_cb_func(evutil_socket_t fd, short what, void *arg) {
             continue;
         }
 
-        GExecutor* dest_engine =
+        GExecutorSharedPtr dest_engine =
                 ThreadInfo::executor_list()[thread_indx];
         GTaskQSharedPtr p_destq = dest_engine->taskq();
 
@@ -318,9 +315,9 @@ static void *gasync_executor_thread(void *args) {
             static_cast<ThreadInfo*>(args);
 
     struct event_base* async_base = event_base_new();
-    GAsyncExecutor *async_engine =
+    GExecutorSharedPtr async_engine(
             new GAsyncExecutor(async_base,
-                               p_thread_info->taskq);
+                               p_thread_info->taskq));
 
     ThreadInfo::executor_list()[p_thread_info->thread_num] =
             async_engine;
@@ -347,7 +344,6 @@ static void *gasync_executor_thread(void *args) {
     event_add(ev, &timeout);
     p_thread_info->async_base = async_base;
     event_base_dispatch(async_base);
-    delete async_engine;
     ThreadInfo::executor_list()[p_thread_info->thread_num] = NULL;
     return p_thread_info;
 }
@@ -359,7 +355,7 @@ static void *gasync_svc_executor_thread(void *args) {
             static_cast<ThreadInfo*>(args);
     std::string gexecutor_id = std::to_string(p_tinfo->thread_num);
     struct event_base* async_base = event_base_new();
-    GExecutor *async_engine =
+    GExecutorSharedPtr async_engine =
             p_tinfo->p_svc->CreateAsyncExecutor(
                     gexecutor_id,
                     p_tinfo->taskq,
@@ -390,7 +386,7 @@ static void *gasync_svc_executor_thread(void *args) {
     p_tinfo->async_base = async_base;
     event_base_dispatch(async_base);
     ThreadInfo::executor_list()[p_tinfo->thread_num] = NULL;
-    p_tinfo->p_svc->DestroyExecutor(gexecutor_id);
+    p_tinfo->p_svc->ShutdownExecutor(gexecutor_id);
     return p_tinfo;
 }
 
