@@ -7,9 +7,6 @@
 
 #include "gexecutor.h"
 
-
-
-
 GExecutor::GExecutor(GExecutorType type,
                      //struct event_base *event_base,
                      GTaskQSharedPtr taskq)
