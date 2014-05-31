@@ -64,8 +64,8 @@ static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
                     << "strerr: " << strerror(errno) << std::endl;
             return;
         }
-        GEXECUTOR_LOG(GEXECUTOR_TRACE)
-                   << "Read: "<< num_bytes << " from fd: " << fd << std::endl;
+        //GEXECUTOR_LOG(GEXECUTOR_TRACE)
+        //           << "Read: "<< num_bytes << " from fd: " << fd << std::endl;
         for (int num_tasks = 0; num_tasks < num_bytes; num_tasks++) {
             GTaskSharedPtr p_task = p_taskq->DequeueGTask();
             GEXECUTOR_LOG(GEXECUTOR_TRACE)
@@ -90,8 +90,7 @@ public:
     }
 protected:
     virtual gerror_code_t Execute() {
-        VLOG(GEXECUTOR_TRACE) << "Task Q working fine" << std::endl;
-        //delete this;
+        //VLOG(GEXECUTOR_TRACE) << "Task Q working fine" << std::endl;
         return 0;
     }
 };
@@ -102,9 +101,7 @@ static void check_taskq_cb(evutil_socket_t fd, short what, void *arg) {
     VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": checking task callback"
             << executor->taskq() << arg << std::endl;
     GTaskSharedPtr check_task(new GTaskCheckTaskQ(executor->taskq()));
-    VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": check taskq callback \n";
     executor->taskq()->EnqueueGTask(check_task);
-    //event_del(timer_ev);
 }
 
 

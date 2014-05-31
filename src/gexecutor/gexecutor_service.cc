@@ -38,10 +38,7 @@ gerror_code_t GExecutorService::ShutdownExecutor(const std::string& gexecutor_id
     if (p_gexec == NULL) {
         return -1;
     }
-    //p_gexec->Shutdown();
-    if (p_gexec->type() == GExecutor::GExecutorType::SYNC) {
-        //delete p_gexec->taskq();
-    }
+    p_gexec->Shutdown();
     return 0;
 }
 
