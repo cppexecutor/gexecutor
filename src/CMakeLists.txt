@@ -15,7 +15,8 @@ set (EXECUTABLE_OUTPUT_PATH
         CACHE PATH
         "Single directory for all binaries"
         )
-project(cppexecutor)
+project(gexecutor)
 add_subdirectory(gexecutor)
+add_subdirectory(samples)
 
 

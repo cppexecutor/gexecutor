@@ -10,24 +10,24 @@ enable_testing()
 
 include_directories(${PROJECT_SOURCE_DIR}/../)
 
-set(GRCACHE_UNITTEST_MODULE_NAME "gexecutor_unittest")
-set(GRCACHE_UNITTEST_MODULE_SRCS ../gexecutor.cc ../gasync_executor.cc 
+set(GEXECUTOR_UNITTEST_MODULE_NAME "gexecutor_unittest")
+set(GEXECUTOR_UNITTEST_MODULE_SRCS ../gexecutor.cc ../gasync_executor.cc 
 	../gsync_executor.cc ../gtaskq.cc ../gsync_worker_thread.cc 
 	../gexecutor_service.cc)
 
-add_executable(${GRCACHE_UNITTEST_MODULE_NAME} 
-	${GRCACHE_UNITTEST_MODULE_NAME}.cc ${GRCACHE_UNITTEST_MODULE_SRCS})
+add_executable(${GEXECUTOR_UNITTEST_MODULE_NAME} 
+	${GEXECUTOR_UNITTEST_MODULE_NAME}.cc ${GEXECUTOR_UNITTEST_MODULE_SRCS})
 
 FIND_LIBRARY(GTEST gtest /usr/local/lib)
 	
-target_link_libraries(${GRCACHE_UNITTEST_MODULE_NAME}
+target_link_libraries(${GEXECUTOR_UNITTEST_MODULE_NAME}
         event gflags glog ${GTEST} pthread dl)
 
 
 # Integrating the cmake with the unit test program such that make test
 # would run the above test case
-add_test (${GRCACHE_UNITTEST_MODULE_NAME}_SMOKE
-        ${CMAKE_BINARY_DIR}/bin/${GRCACHE_UNITTEST_MODULE_NAME}
+add_test (${GEXECUTOR_UNITTEST_MODULE_NAME}_SMOKE
+        ${CMAKE_BINARY_DIR}/bin/${GEXECUTOR_UNITTEST_MODULE_NAME}
         --gtest_filter=*Smoke*
         --logtostderr=0
-        --gtest_output=xml:${GRCACHE_UNITTEST_MODULE_NAME}_SMOKE.xml)
+        --gtest_output=xml:${GEXECUTOR_UNITTEST_MODULE_NAME}_SMOKE.xml)

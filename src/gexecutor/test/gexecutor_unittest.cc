@@ -694,47 +694,6 @@ TEST_F(GExecutorTest, ASyncLoopTestSmoke) {
 }
 
 
-
-
-class GeTestEnvironment: public testing::Environment {
-public:
-    virtual void SetUp() {
-        ThreadInfo::num_queues = FLAGS_num_threads;
-    }
-
-    virtual void TearDown() {
-    }
-};
-
-int main(int argc, char *argv[]) {
-    int result;
-
-    google::InitGoogleLogging(argv[0]);
-
-    FLAGS_logtostderr = 0;
-
-    testing::InitGoogleTest(&argc, argv);
-
-    char curr_dir[1024];
-    getcwd(curr_dir, sizeof(curr_dir));
-    cout << "current dir" << curr_dir << endl;
-    google::ParseCommandLineFlags(&argc, &argv, true);
-    FLAGS_logbufsecs = 0;
-    testing::AddGlobalTestEnvironment(new GeTestEnvironment());
-
-    result = RUN_ALL_TESTS();
-
-    return result;
-}
-
-
-
-
-
-
-
-
-
 static void hybrid_timer_cb(evutil_socket_t fd, short what, void *arg) {
     HybridApp* p_app =
             static_cast<HybridApp *>(arg);
@@ -946,5 +905,34 @@ TEST_F(GSyncExecutorTest, DeferredSmoke) {
 
 
 
+class GeTestEnvironment: public testing::Environment {
+public:
+    virtual void SetUp() {
+        ThreadInfo::num_queues = FLAGS_num_threads;
+    }
 
+    virtual void TearDown() {
+    }
+};
+
+int main(int argc, char *argv[]) {
+    int result;
+
+    google::InitGoogleLogging(argv[0]);
+
+    FLAGS_logtostderr = 0;
+
+    testing::InitGoogleTest(&argc, argv);
+
+    char curr_dir[1024];
+    getcwd(curr_dir, sizeof(curr_dir));
+    cout << "current dir" << curr_dir << endl;
+    google::ParseCommandLineFlags(&argc, &argv, true);
+    FLAGS_logbufsecs = 0;
+    testing::AddGlobalTestEnvironment(new GeTestEnvironment());
+
+    result = RUN_ALL_TESTS();
+
+    return result;
+}
 

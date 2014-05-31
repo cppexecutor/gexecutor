@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 set (CMAKE_CXX_COMPILER  g++)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++11 -Wall -Werror")
 
-project(executor)
+project(gexecutorlib)
 
 include_directories(${PROJECT_SOURCE_DIR}/../)
 set (GEXECUTOR_SOURCES gexecutor.cc gasync_executor.cc gsync_executor.cc 
@@ -20,5 +20,4 @@ install(TARGETS gexecutor
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
 add_subdirectory(test)
-add_subdirectory(sample)
 
