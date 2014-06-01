@@ -58,59 +58,6 @@ private:
     GExecutorSharedPtr sync_executor_;
 };
 
-class SimpleHttpServerAsyncRequestTask : public GTask {
-public:
-    SimpleHttpServerAsyncRequestTask(SimpleHttpServer *http_server,
-                         struct evhttp_request *req)
-    : GTask(http_server->async_taskq()), http_server_(http_server), req_(req),
-      file_path_(""), decoded_path_(NULL), decoded_(NULL), evb_(NULL) {
-        return;
-    }
-    virtual ~SimpleHttpServerAsyncRequestTask() {
-        if (decoded_)
-            evhttp_uri_free(decoded_);
-        if (decoded_path_)
-            free(decoded_path_);
-        if (evb_)
-            evbuffer_free(evb_);
-    }
-protected:
-    virtual gerror_code_t Execute();
-private:
-    const SimpleHttpServer *http_server_;
-    struct evhttp_request *req_;
-    std::string file_path_;
-    char* decoded_path_;
-    struct evhttp_uri *decoded_;
-    struct evbuffer *evb_;
-};
-
-
-class SimpleHttpServerSyncRequestTask : public GTask {
-public:
-    SimpleHttpServerSyncRequestTask(SimpleHttpServer *http_server,
-                        struct evhttp_request *req)
-    : GTask(http_server->sync_taskq()), http_server_(http_server), req_(req),
-      file_path_(""), decoded_path_(NULL), decoded_(NULL) {
-        return;
-    }
-    virtual ~SimpleHttpServerSyncRequestTask() {
-        if (decoded_)
-            evhttp_uri_free(decoded_);
-        if (decoded_path_)
-            free(decoded_path_);
-
-    }
-protected:
-    virtual gerror_code_t Execute();
-private:
-    const SimpleHttpServer *http_server_;
-    struct evhttp_request *req_;
-    std::string file_path_;
-    char* decoded_path_;
-    struct evhttp_uri *decoded_;
-};
-
 
 DECLARE_int32(num_sync_workers);
 #define HTTPD_LOG_TRACE 0

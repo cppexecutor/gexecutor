@@ -255,8 +255,7 @@ std::string SimpleHttpServer::process_sync_task(struct evhttp_request *req) {
      * Instead of sending response here create a new ask to response back.
      */
     HTTPD_LOG(HTTPD_LOG_TRACE) << "filestat: " << whole_path
-            << " sending response task"
-            << std::endl;
+            << " sending response task" << std::endl;
     return std::string(whole_path);
 }
 
@@ -354,7 +353,7 @@ void http_default_cb(struct evhttp_request * req, void *arg) {
 
     if (fstat(fd, &st) < 0) {
         /* Make sure the length still matches, now that we
-         * opened the file :/ */
+         * opened the fi                le :/ */
         evhttp_send_error(req, HTTP_NOTFOUND, 0);
         http_req_cleanup(decoded_path, decoded, evb);
         return;
@@ -397,16 +396,21 @@ int32_t SimpleHttpServer::Initialize() {
 
 SimpleHttpServer::SimpleHttpServer(uint32_t num_sync_workers) :
         docroot_(FLAGS_docroot.c_str()), num_sync_workers_(num_sync_workers),
-        event_base_(event_base_new()), evhttp_(evhttp_new(event_base_)),
-        executors_(),
+        event_base_(NULL), evhttp_(NULL),
+        executors_(true),
         async_taskq_(), sync_taskq_(),
         async_executor_(), sync_executor_() {
+
+    event_base_ = executors_.event_base();
+
     if (!event_base_) {
         HTTPD_LOG(HTTPD_LOG_ERROR) << "Event Base null"
                 <<  "errno: " << errno << ": " << strerror(errno) << std::endl;
         return;
     }
     HTTPD_LOG(HTTPD_LOG_TRACE) << "Created Event Base\n";
+
+    evhttp_ = evhttp_new(event_base_);
 
     if (!evhttp_) {
         HTTPD_LOG(HTTPD_LOG_ERROR) << "EvHTTP creation failed. "
@@ -421,9 +425,10 @@ SimpleHttpServer::SimpleHttpServer(uint32_t num_sync_workers) :
 
     HTTPD_LOG(HTTPD_LOG_TRACE) << "Creating http socket handle\n";
 
-    async_executor_ = executors_.CreateAsyncExecutor("async",
-                                                     GTaskQSharedPtr(NULL),
-                                                     event_base_);
+    async_executor_ =
+            executors_.CreateAsyncExecutor(executors_.kDefaultExecutorId,
+                                           GTaskQSharedPtr(NULL),
+                                           event_base_);
     async_taskq_ = async_executor_->taskq();
 
     sync_executor_ = executors_.CreateSyncExecutor("sync", num_sync_workers);
