@@ -88,16 +88,10 @@ std::vector<GExecutorSharedPtr>& ThreadInfo::executor_list() {
     return executor_list_;
 }
 
-TEST_F(GExecutorTest, SampleSmoke) {
-  // You can access data in the test fixture here.
-    ASSERT_TRUE(1);
-}
 
 /**
- *
+ * Tests contructors
  */
-
-
 TEST_F(GExecutorTest, InitializeConstructorsSmoke) {
     GTaskQSharedPtr taskq(new GTaskQ());
 
@@ -391,7 +385,9 @@ static void *gasync_svc_executor_thread(void *args) {
 }
 
 
-
+/**
+ * Creates N Async executors and runs simple HEllo world tasks.
+ */
 TEST_F(GExecutorTest, InitializeAsyncSmoke) {
     pthread_attr_t attr1;
     ThreadInfo *tinfo = NULL;
@@ -451,7 +447,11 @@ TEST_F(GExecutorTest, InitializeAsyncSmoke) {
 }
 
 
-
+/**
+ * Creates N Async executors and runs ping pong test where each executor
+ * puts task in every other executors. The number of messages can be controlled
+ * via FLAGS_num_messages.
+ */
 TEST_F(GExecutorTest, InitializeAsyncPingPongSmoke) {
     pthread_attr_t attr1;
     ThreadInfo *tinfo = NULL;

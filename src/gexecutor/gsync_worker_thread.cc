@@ -25,6 +25,10 @@ GSyncWorkerThread::~GSyncWorkerThread() {
     }
 }
 
+/**
+ * synchronous worker thread function.
+ * @param args
+ */
 static void *gsync_executor_worker(void *args) {
 
     GSyncWorkerThread* p_worker =

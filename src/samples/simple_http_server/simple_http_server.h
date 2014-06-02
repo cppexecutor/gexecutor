@@ -39,11 +39,24 @@ public:
     GTaskQSharedPtr sync_taskq() {
         return sync_taskq_;
     }
+    /**
+     * Example of how to create an asynchronous task
+     * @param req
+     */
     void handle_async_request(struct evhttp_request * req);
+    /**
+     * Asynchronous Task callback
+     * @param req
+     */
     void process_async_task(struct evhttp_request* req);
     std::string process_sync_task(struct evhttp_request* req);
+
     void process_sync_task_callback(struct evhttp_request* req,
                                     std::string whole_path);
+    /**
+     * Example of how to create a synchronous task
+     * @param req
+     */
     void handle_sync_request(struct evhttp_request * req);
 private:
     std::string docroot_;
