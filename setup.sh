@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo apt-get install libgoogle-glog-dev libgflags2 libgflags-dev libevent-dev
+sudo apt-get install libgoogle-glog-dev libgflags2 libgflags-dev libevent-dev cmake
 wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
 unzip gtest-1.6.0.zip
 cd gtest-1.6.0
