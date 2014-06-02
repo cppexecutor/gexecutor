@@ -1,71 +1,171 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Gexecutor by cppexecutor</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="CPP executor a C++ reactor Library : synchronous and asynchronous event based c++ executor libray" />
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>CPP executor a C++ reactor Library</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Gexecutor</h1>
-        <p>synchronous and asynchronous event based c++ executor libray</p>
 
-        <p class="view"><a href="https://github.com/cppexecutor/gexecutor">View the Project on GitHub <small>cppexecutor/gexecutor</small></a></p>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/cppexecutor/gexecutor">View on GitHub</a>
 
+          <h1 id="project_title">CPP executor a C++ reactor Library</h1>
+          <h2 id="project_tagline">synchronous and asynchronous event based c++ executor libray</h2>
 
-        <ul>
-          <li><a href="https://github.com/cppexecutor/gexecutor/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/cppexecutor/gexecutor/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/cppexecutor/gexecutor">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/cppexecutor/gexecutor/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/cppexecutor/gexecutor/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="gexecutor" class="anchor" href="#gexecutor"><span class="octicon octicon-link"></span></a>GExecutor</h1>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>GExector provides a C++ library provides a unified way to handle synchronous and asynchronous tasks by abstracting the tasks from underlying thread and process architecture.  </p>
+
+<p>In a typical I/O bound application can be implemented via reactor pattern using event loops like libevent or boost::asio. However, it has two limitations<br>
+1. <strong>Synchronous Apis processing</strong>: If application needs to call a synchronous API or processing then it would block the event loop. This would make the application perform badly as it breaks the reactor pattern. Typical strategies are to create threads and send offload tasks to it. However, there is no simple way to handle these tasks in C++.<br>
+2. <strong>Multi CPU limitation</strong>: Typical event loops can only at most use a single CPU effectively. In today's computing environment has lots of CPU available. However, without using concurrent data structures it is not trivial to use reactor pattern and also use multiple CPU without complicating the programming paradigm.  </p>
+
+<p>An alternative stragegy is to use multiple threads or process to use better utilize multiple CPUs. However, that can complicate the application design once locks or shared memory based information sharing is used between the different computing blocks. More details on the discussion can be found at <a href="http://www.kegel.com/c10k.html">C10K Problem</a>.  </p>
+
+<p>GExector implements a hybrid event loop based task processing framework that can be used for handling and routing tasks between async event loops and worker threads for handling synchronous tasks.  </p>
+
+<p>GExecutor is inspired by Java Executor like <a href="http://www.eecs.harvard.edu/%7Emdw/proj/seda/">SEDA</a> and <a href="http://twistedmatrix.com/trac/wiki">Twisted</a> for python. It currently uses libevent based event loop for implementation on Linux.</p>
+
+<h1>
+<a name="architecture" class="anchor" href="#architecture"><span class="octicon octicon-link"></span></a>Architecture</h1>
+
+<p>GExector design is based on two important elements. Every executor has a task queue that it uses to receive Tasks. Each Task implements a virtual method <em>Execute()</em> that is called by the executor. Tasks contain pointer to the response Queue that can be used by the Task to send back a response to the originating Executor.  </p>
+
+<p>A DeferredTask template provides a simpler interface to register three kinds of callbacks<br>
+1. Task implementation that is executed on a GExecutor Eg. Worker thread.
+2. Callback to be called when task execution is complete on the originating executor.
+3. Errback to be called when task execution failed on the originating executor.</p>
+
+<h1>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h1>
+
+<p>Here is example of a simple server based on GExecutor. Please see samples/simple_http_server for full reference:  </p>
+
+<pre><code>void print_hello() {
+   std::cout &lt;&lt; "Hello World\n";
+}
+void print_hello_done() {
+   std::cout &lt;&lt; "Said Hello to the world\n";
+}
+void print_hello_failed() {
+    std::cout &lt;&lt; "Could not say Hello\n";
+}
+
+int main(int argc, const char* argv[]) {
+    // Creates a GExecutor reactor with default async executor loop
+    GExecutorService executor_svc(true);
+    // Creates a pool of synchronous workers that accepts tasks on taskq sync_executor_-&gt;taskq();
+    sync_executor_ = executors_.CreateSyncExecutor("sync", num_sync_workers);
+    // run the default reactor.
+    executor_svc.run();
+}
+
+void create_sync_task() {
+    //Example to add print "Hello" Tasks
+    GExecutorSharedPtr async_executor = executor_svc.gexecutor(
+        executor_svc.kDefaultExecutorId);
+    GTaskQSharedPtr taskq = async_executor-&gt;taskq();
+    boost::shared_ptr&lt;DeferredTask&lt;void&gt;&gt; d(
+        new DeferredTask&lt;void&gt;(taskq, print_hello);
+    // attach callback when task print_hello was successful
+    d.set_callback(print_hello_done);
+    // attach callback when task print_hello failed.
+    d.set_errback(print_hello_failed);
+    async_executor-&gt;EnQueueTask(d);
+}
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>Here are some of the example reactor paradigms that can be easily implemented using GExecutor</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<h2>
+<a name="single-async-loop-with-synchronous-worker-pools" class="anchor" href="#single-async-loop-with-synchronous-worker-pools"><span class="octicon octicon-link"></span></a>Single Async loop with synchronous worker pools</h2>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p><img src="1async1sync.jpg" alt="alt text"></p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<p>There is one default async executor and one pool of synch workers. This is perhaps most common option for the I/O bound applications. CPU bound application would either need to break away tasks for workers or create multiple async execution blocks.</p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<h2>
+<a name="multiple-async-loop-using-single-synchronous-worker-pool" class="anchor" href="#multiple-async-loop-using-single-synchronous-worker-pool"><span class="octicon octicon-link"></span></a>Multiple Async loop using single synchronous worker pool</h2>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<p>This is useful in the cases like HTTP server needs more than one CPU to just handle the TCP connection accepts. These accepts can be handled in a distributed executors. However, the request can then be sent to a common Executor/thread that is used for implementing the application using reactor design. This mechanism avoids need to use shared memory for sharing information between two threads/processes.
+<img src="multi-async-1-sync.jpg" alt="alt text"></p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<h2>
+<a name="multiple-async-loop-with-multiple-synchronous-worker-pools" class="anchor" href="#multiple-async-loop-with-multiple-synchronous-worker-pools"><span class="octicon octicon-link"></span></a>Multiple Async loop with multiple synchronous worker pools</h2>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<p>This is useful in case of using event driven reactor approach to using multiple reactors to implement multi-stage SEDA style processing blocks. They can exchange tasks between them using the GEexecutor interface. In addition each stage can have its own synchronous processing as well. It can be used for having different worker queue lengths for different event processing units.
+<img src="multi-async-multi-sync.jpg" alt="alt text"></p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<h1>
+<a name="design-considerations" class="anchor" href="#design-considerations"><span class="octicon octicon-link"></span></a>Design considerations</h1>
+
+<p>One important aspect of the GExecutor interface is that it accepts taskq as a parameter for the async executors. This is because the taskq needs to be created before the Async threads are created. Otherwise the underlying FD and pipe interface used for notifications would not be visible outside the async thread created.</p>
+
+<h1>
+<a name="working-with-the-code" class="anchor" href="#working-with-the-code"><span class="octicon octicon-link"></span></a>Working with the Code</h1>
+
+<h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>GExecutor is only supported on Linux. There is not much Linux specific implementation other than the fact that I have not had time to make it full platform dependent.</p>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<p>It is uses boost_system, libevent, GTest (unit tests), cmake (build). Script <em>setup.sh</em> can be used for simple installation.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Linux installation requires following steps:  </p>
+
+<pre><code>mkdir build
+cd build
+cmake ../src
+make
+sudo make install
+make test
+</code></pre>
+
+<h1>
+<a name="licensing" class="anchor" href="#licensing"><span class="octicon octicon-link"></span></a>Licensing</h1>
+
+<p>All the software provided under gexecutor under the MIT License</p>
       </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/cppexecutor">cppexecutor</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">CPP executor a C++ reactor Library maintained by <a href="https://github.com/cppexecutor">cppexecutor</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
+
     
+
   </body>
 </html>
