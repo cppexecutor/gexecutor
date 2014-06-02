@@ -21,15 +21,15 @@
     // get access to the default event_base
     struct event_base *event_base = executor_svc.event_base();
  *  // run the default reactor.
- *  executor_svc.run();
+    executor_svc.run();
  *
- *  void print_hello() {
- *     std::cout << "Hello World\n";
- *  }
+    void print_hello() {
+       std::cout << "Hello World\n";
+    }
  *
- *  void print_hello_done() {
- *     std::cout << "Said Hello to the world\n";
- *  }
+    void print_hello_done() {
+       std::cout << "Said Hello to the world\n";
+    }
  *
  *  Example to add print "Hello" Tasks
     GExecutorSharedPtr async_executor = executor_svc.gexecutor(
