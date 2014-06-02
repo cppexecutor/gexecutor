@@ -66,9 +66,13 @@ There is one default async executor and one pool of synch workers. This is perha
 
 ##Multiple Async loop using single Async loop for tasks
 This is useful in the cases like HTTP server needs more than one CPU to just handle the TCP connection accepts. These accepts can be handled in a distributed executors. However, the request can then be sent to a common Executor/thread that is used for implementing the application using reactor design. This mechanism avoids need to use shared memory for sharing information between two threads/processes.
+![alt text](multi-async-1-sync.jpg)
 
-##Multiple Async loop with single synchronous worker pools##
-This is useful in case of using event driven reactor approach to using multiple reactors to implement multi-stage SEDA style processing blocks. They can exchange tasks between them using the GEexecutor interface. 
+
+##Multiple Async loop with multiple synchronous worker pools##
+This is useful in case of using event driven reactor approach to using multiple reactors to implement multi-stage SEDA style processing blocks. They can exchange tasks between them using the GEexecutor interface.  
+![alt text](multi-async-multi-sync.jpg)
+
 
 #Design considerations#
 One important aspect of the GExecutor interface is that it accepts taskq as a parameter for the async executors. This is because the taskq needs to be created before the Async threads are created. Otherwise the underlying FD and pipe interface used for notifications would not be visible outside the async thread created.
