@@ -60,7 +60,7 @@ Here is example of a simple server based on GExecutor. Please see samples/simple
 
 Here are some of the example reactor paradigms that can be easily implemented using GExecutor
 ##Single Async loop with synchronous worker pools##
-![alt text](1async1sync.svg)
+![alt text](1async1sync.jpg)
 
 There is one default async executor and one pool of synch workers. This is perhaps most common option for the I/O bound applications. CPU bound application would either need to break away tasks for workers or create multiple async execution blocks.
 
