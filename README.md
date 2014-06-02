@@ -64,13 +64,13 @@ Here are some of the example reactor paradigms that can be easily implemented us
 
 There is one default async executor and one pool of synch workers. This is perhaps most common option for the I/O bound applications. CPU bound application would either need to break away tasks for workers or create multiple async execution blocks.
 
-##Multiple Async loop using single Async loop for tasks
+##Multiple Async loop using single synchronous worker pool
 This is useful in the cases like HTTP server needs more than one CPU to just handle the TCP connection accepts. These accepts can be handled in a distributed executors. However, the request can then be sent to a common Executor/thread that is used for implementing the application using reactor design. This mechanism avoids need to use shared memory for sharing information between two threads/processes.
 ![alt text](multi-async-1-sync.jpg)
 
 
 ##Multiple Async loop with multiple synchronous worker pools##
-This is useful in case of using event driven reactor approach to using multiple reactors to implement multi-stage SEDA style processing blocks. They can exchange tasks between them using the GEexecutor interface.  
+This is useful in case of using event driven reactor approach to using multiple reactors to implement multi-stage SEDA style processing blocks. They can exchange tasks between them using the GEexecutor interface. In addition each stage can have its own synchronous processing as well. It can be used for having different worker queue lengths for different event processing units.
 ![alt text](multi-async-multi-sync.jpg)
 
 
