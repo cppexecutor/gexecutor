@@ -23,21 +23,14 @@
  * 2. Synchronous (typically using blocking I/O)
  *
  *
- *
  * What is an executor?
  * Following the interface from Java, an Executor is simply a service that
  * has a queue to accept tasks. If an executor is async then it would run
- * the task in async even loop.
+ * the task in async event loop.
  *
  * If the executor is a synchronous then it would have a pool of threads that
  * are all working off the same queue of tasks. One of the threads in the
  * queue would pick up the task and execute it.
- *
- * Thundering herd?
- * So, how is the thundering herd addressed if there are multiple threads
- * listening for tasks in the same thread.
- *
- *
  *
  */
 
@@ -67,7 +60,12 @@ class GExecutor : public boost::enable_shared_from_this<GExecutor> {
     virtual GTaskQSharedPtr taskq() {
         return p_taskq_;
     }
-
+    /**
+     * signals close of the taskq and shuts down the worker threads for the
+     * synchronous executor. In case of async executor it woudl leave the
+     * application handle the exit of the thread/process.
+     * @return
+     */
     virtual gerror_code_t Shutdown() = 0;
 
     /**

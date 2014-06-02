@@ -17,12 +17,10 @@
 #include <assert.h>
 #include <pthread.h>
 
-
-
-
-
 /**
- * This is the task interface
+ * This is the task interface that should be extended by overriding the
+ * Execute() function. The Execute is called by the executor when it receives
+ * a task in its queue.
  *
  */
 class GTask : public boost::enable_shared_from_this<GTask> {
@@ -38,17 +36,9 @@ public:
                    const std::string& debug_str);
 
     virtual ~GTask();
-
     /**
-     * If done response is required then the GTask would be sent back to the
-     * executor which originated this task
-     *
-     * GTask *p_task;
-     * p_task->execute();
-     * if (p_task->IsDoneResponseRequired()) {
-     *      originator_executor->EnQueueTaskResponse(this);
-     * }
-     *
+     * This is the Task callback that application would like to run in a given
+     * executor.
      * @return
      */
     virtual gerror_code_t Execute() {
@@ -69,6 +59,11 @@ public:
         return debug_str_;
     }
 protected:
+    /**
+     * contains the response taskq pointer. This can be accessed by Execute()
+     * implementation to send back the response task to the executor that
+     * had originated the task.
+     */
     GTaskQSharedPtr resp_task_q_;
     GTaskQSharedPtr exec_task_q_;
     GExecutor* executor_;
