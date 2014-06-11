@@ -2,11 +2,11 @@
 
 
 #Introduction#
-GExector provides a C++ library provides a unified way to handle synchronous and asynchronous tasks by abstracting the tasks from underlying thread and process architecture.  
+GExector provides a unified way to handle synchronous and asynchronous tasks by abstracting tasks from underlying thread and process architecture. It is a C++ library which offers similar capabilities like Executor framework in Java and Twisted in Python.
 
-In a typical I/O bound application can be implemented via reactor pattern using event loops like libevent or boost::asio. However, it has two limitations  
+One of the well studied patterns for implementing a High performance I/O bound applications is to use asynchronous processing of client requests. This allows for very high utilization of CPU, memory and saves context switches as different requests are served. Such a design pattern is also referred as reactor pattern reactor pattern using event loops like libevent or boost::asio. However, it has two limitations
 1. **Synchronous Apis processing**: If application needs to call a synchronous API or processing then it would block the event loop. This would make the application perform badly as it breaks the reactor pattern. Typical strategies are to create threads and send offload tasks to it. However, there is no simple way to handle these tasks in C++.  
-2. **Multi CPU limitation**: Typical event loops can only at most use a single CPU effectively. In today's computing environment has lots of CPU available. However, without using concurrent data structures it is not trivial to use reactor pattern and also use multiple CPU without complicating the programming paradigm.  
+2. **Multi CPU limitation**: Typical event loops can only at most use a single CPU effectively. In today's computing environment has lots of CPU available. Performance of a single threaded systems against Without using concurrent data structures it is not trivial to use reactor pattern and also use multiple CPU without complicating the programming paradigm.  
 
 An alternative stragegy is to use multiple threads or process to use better utilize multiple CPUs. However, that can complicate the application design once locks or shared memory based information sharing is used between the different computing blocks. More details on the discussion can be found at [C10K Problem](http://www.kegel.com/c10k.html).  
 
