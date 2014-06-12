@@ -26,6 +26,7 @@ A DeferredTask supports three kinds of callbacks
 
 #Example#
 Here is an hello world example of a simple server based on GExecutor. Please see samples/simple_http_server for full reference:  
+
     /**
     * Hello world task that is executed in a different thread.
     */
@@ -43,8 +44,10 @@ Here is an hello world example of a simple server based on GExecutor. Please see
     */
     void print_hello_failed() {
         std::cout << "Could not say Hello\n";
-    }
-
+    }  
+    
+    // Main thread that instantiates the GExecutor Service and sets up async and sync executors.
+    
     int main(int argc, const char* argv[]) {
         // Creates a GExecutor reactor with default async executor loop
         GExecutorService executor_svc(true);
@@ -52,9 +55,11 @@ Here is an hello world example of a simple server based on GExecutor. Please see
         sync_executor_ = executors_.CreateSyncExecutor("sync", num_sync_workers);
         // run the default reactor.
         executor_svc.run();
-    }
+    }  
     
-    void create_sync_task() {
+    // Example to create an async task for the default executor
+    
+    void create_async_task() {
         //Example to add print "Hello" Tasks
         GExecutorSharedPtr async_executor = executor_svc.gexecutor(
             executor_svc.kDefaultExecutorId);
@@ -67,6 +72,23 @@ Here is an hello world example of a simple server based on GExecutor. Please see
         d.set_errback(print_hello_failed);
         async_executor->EnQueueTask(d);
     }
+
+    // Example to create an sync task for the default executor
+
+    void create_sync_task() {
+        //Example to add print "Hello" Tasks
+        GExecutorSharedPtr sync_executor = executor_svc.gexecutor(
+            "sync");
+        GTaskQSharedPtr taskq = sync_executor->taskq();
+        boost::shared_ptr<DeferredTask<void>> d(
+            new DeferredTask<void>(taskq, print_hello);
+        // attach callback when task print_hello was successful
+        d.set_callback(print_hello_done);
+        // attach callback when task print_hello failed.
+        d.set_errback(print_hello_failed);
+        sync_executor->EnQueueTask(d);
+    }
+
 
 Here are some of the example reactor paradigms that can be easily implemented using GExecutor
 ##Single Async loop with synchronous worker pools##
