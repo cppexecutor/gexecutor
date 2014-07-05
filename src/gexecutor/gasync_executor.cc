@@ -33,6 +33,25 @@ GAsyncExecutor::~GAsyncExecutor() {
     }
 }
 
+gerror_code_t GAsyncExecutor::Shutdown() {
+    if (p_taskq_ev_) {
+        event_del(p_taskq_ev_);
+        event_free(p_taskq_ev_);
+        p_taskq_ev_ = 0;
+    }
+    StopTimer();
+    return 0;
+}
+
+void GAsyncExecutor::StopTimer() {
+    if (!p_timer_ev_) {
+        return;
+    }
+    event_del(p_timer_ev_);
+    //event_free(p_timer_ev_);
+    p_timer_ev_ = 0;
+}
+
 gerror_code_t GAsyncExecutor::EnQueueTask(GTaskSharedPtr task) {
     return p_taskq_->EnqueueGTask(task);
 }
