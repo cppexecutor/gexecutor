@@ -17,6 +17,23 @@
  *  This implements a synchronous executor engine where tasks are processed
  *  by individual worker threads using unbounded task queue.
  *
+ *  Following example shows simple steps to create a Synchronous Executor
+ *  with worker threads.
+ *  // create taskq where all the synchronous workers woudl listen
+ *  GTaskQSharedPtr sync_taskq(new GTaskQ());
+ *  sync_taskq->Initialize();
+ *  GSyncExecutor *sync_engine =
+ *           new GSyncExecutor(sync_taskq);
+ *  // Now sync engine is ready for events
+ *  Send tasks to the sync engine
+ *
+ *  boost::shared_ptr<DeferredTask<void>> d(
+ *          new DeferredTask<void>(taskq, print_hello);
+ *  // attach callback when task print_hello was successful
+ *  d.set_callback(print_hello_done);
+ *  // attach callback when task print_hello failed.
+ *  d.set_errback(print_hello_failed);
+ *  sync_executor->EnQueueTask(d);
  */
 #include "gsync_worker_thread.h"
 
@@ -26,6 +43,14 @@ typedef boost::shared_ptr<GSyncWorkerThread> GSyncWorkerThreadSharedPtr;
 
 class GSyncExecutor: public GExecutor {
 public:
+    /**
+     * Create Sync Executor that extends the GExecutor
+     * @param taskq taskq where all the workers would wait for notification
+     * to pick up and execute tasks in synchronous manner.
+     * @param num_workers number of workers. Currently it is static. In future
+     * can build a mechanism to increase or decrease the number of workers
+     * based on the load.
+     */
     GSyncExecutor(GTaskQSharedPtr taskq,
                   size_t num_workers = 4);
 
