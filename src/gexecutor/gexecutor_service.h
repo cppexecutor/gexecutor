@@ -7,6 +7,7 @@
 
 #ifndef GEXECUTOR_SERVER_H_
 #define GEXECUTOR_SERVER_H_
+#include <event2/event.h>
 #include "gexecutor/gexecutor.h"
 #include <unordered_map>
 

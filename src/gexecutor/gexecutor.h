@@ -7,8 +7,6 @@
 
 #ifndef GEXECUTOR_H_
 #define GEXECUTOR_H_
-
-#include <event2/event.h>
 #include <string>
 #include <set>
 #include "gexecutor/gtaskq.h"
@@ -44,7 +42,6 @@ class GExecutor : public boost::enable_shared_from_this<GExecutor> {
     /**
      *
      * @param type
-     * @param event_base
      * @param taskq: This needs to be created before threads are created.
      */
 
@@ -79,7 +76,6 @@ class GExecutor : public boost::enable_shared_from_this<GExecutor> {
     virtual gerror_code_t Initialize() = 0;
 
  protected:
-    // struct event_base *event_base_;
     GExecutor(GExecutorType type,
               GTaskQSharedPtr taskq);
     GExecutorType gexec_type_;

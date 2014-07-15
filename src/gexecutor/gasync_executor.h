@@ -8,6 +8,7 @@
 #ifndef GASYN_CEXECUTOR_H_
 #define GASYN_CEXECUTOR_H_
 
+#include <event2/event.h>
 #include "gexecutor/gexecutor.h"
 
 class GAsyncExecutor : public GExecutor {
@@ -25,24 +26,9 @@ public:
     virtual GTaskQSharedPtr taskq() {
         return p_taskq_;
     }
-    virtual gerror_code_t Shutdown() {
-        if (p_taskq_ev_) {
-            event_del(p_taskq_ev_);
-            event_free(p_taskq_ev_);
-            p_taskq_ev_ = 0;
-        }
-        StopTimer();
-        return 0;
-    }
+    virtual gerror_code_t Shutdown();
 
-    virtual void StopTimer() {
-        if (!p_timer_ev_) {
-            return;
-        }
-        event_del(p_timer_ev_);
-        //event_free(p_timer_ev_);
-        p_timer_ev_ = 0;
-    }
+    virtual void StopTimer();
 
 protected:
     struct event_base *event_base_;
