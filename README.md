@@ -53,10 +53,12 @@ Here is an hello world example of a simple server based on GExecutor. Please see
     int main(int argc, const char* argv[]) {
         // Creates a GExecutor reactor with default async executor loop
         GExecutorService executor_svc(true);
-        // Creates a pool of synchronous workers that accepts tasks on taskq sync_executor_->taskq();
-        sync_executor_ = executors_.CreateSyncExecutor("sync", num_sync_workers);
+        // Creates a pool of synchronous workers that accepts tasks on taskq sync_executor->taskq();
+        GExecutorSharedPtr sync_executor = executor_svc.CreateSyncExecutor("sync", num_sync_workers);
         // run the default reactor.
         executor_svc.run();
+        // alternatively if event_base was created outside one can do executor_svc(false) and call 
+        // event_dispatch outside.
     }  
     
     // Example to create an async task for the default executor
