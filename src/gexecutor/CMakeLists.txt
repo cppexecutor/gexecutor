@@ -6,11 +6,15 @@ set (GEXECUTOR_VERSION 1.0.0)
 project(gexecutorlib)
 
 include_directories(${PROJECT_SOURCE_DIR}/../)
-set (GEXECUTOR_SOURCES gexecutor.cc gasync_executor.cc gsync_executor.cc 
-		gtaskq.cc gsync_worker_thread.cc gexecutor_service.cc)
+set (GEXECUTOR_COMMON_SOURCES gexecutor.cc gtaskq.cc)
+add_library(gexecutor-common SHARED ${GEXECUTOR_COMMON_SOURCES})
+target_link_libraries(gexecutor-common pthread)
+set_target_properties(gexecutor-common PROPERTIES VERSION ${GEXECUTOR_VERSION} SOVERSION 1)
 
+set (GEXECUTOR_SOURCES gasync_executor.cc gsync_executor.cc 
+		gsync_worker_thread.cc gexecutor_service.cc)
 add_library(gexecutor SHARED ${GEXECUTOR_SOURCES})
-target_link_libraries(gexecutor event pthread)
+target_link_libraries(gexecutor gexecutor-common event pthread)
 set_target_properties(gexecutor PROPERTIES VERSION ${GEXECUTOR_VERSION} SOVERSION 1)
 
 install (FILES gexecutor.h gexecutor_service.h gtaskq.h 
@@ -21,5 +25,11 @@ install(TARGETS gexecutor
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
+
+install(TARGETS gexecutor-common
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib/static)
+
 add_subdirectory(test)
 
