@@ -5,21 +5,19 @@
  *      Author: cppexecutor@gmail.com
  */
 
-#ifndef GEXECUTOR_SERVICE_H_
-#define GEXECUTOR_SERVICE_H_
-#include <event2/event.h>
-#include "gexecutor/gexecutor_service_base.h"
+#ifndef GEXECUTOR_SERVICE_BASE_H_
+#define GEXECUTOR_SERVICE_BASE_H_
 #include "gexecutor/gexecutor.h"
 #include <unordered_map>
 
 /**
- * \brief A helper class to manage all executors based on libevent (reactors)
+ * \brief A helper class to manage all executors (reactors)
  *
  *  This class provides a registry for all the executors. It also creates
  *  a default asynchronous reactor that owns the event_base.
  *
  *  Example.
-    GExecutorService executor_svc(true);
+    GExecutorServiceBase executor_svc(true);
     // get access to the default event_base
     struct event_base *event_base = executor_svc.event_base();
  *  // run the default reactor.
@@ -44,8 +42,12 @@
  *
  */
 
-class GExecutorService : public GExecutorServiceBase {
-  public:
+class GExecutorServiceBase {
+public:
+    /**
+     * ID of the default Async Executor
+     */
+    static const std::string kDefaultExecutorId;
     /**
      * @param enable_default_async_executor When set to true creates
      *  default async executor, event_base. This can be used for most
@@ -55,24 +57,15 @@ class GExecutorService : public GExecutorServiceBase {
      *  This should be set to False in case application already has an event
      *  base.
      */
-    GExecutorService(bool enable_default_async_executor=false);
-    virtual ~GExecutorService();
+    GExecutorServiceBase(bool enable_default_async_executor=false);
+    virtual ~GExecutorServiceBase();
     /**
-     * Creates a new Asynchronous Executor
-     * @param executor_id Executor ID that can be used for referencing executor
-     * @param p_taskq External TaskQ for the executor. TaskQ is taken as an
-     *      input as TaskQ needs to be created before the thread running
-     *      the executor is created. When multiple asynchronous executors
-     *      are present then taskq to communicate between them needs to
-     *      be created before the thread running executor is created.
      *
-     * @param async_event_base. Event Base to be used for the executor.
-     * @return shared pointer to the executor.
+     * @param gexecutor_id Calls shutdown of an executor and removes from the
+     *  registery.
+     * @return gerror_code_t success or error code if it fails.
      */
-    GExecutorSharedPtr CreateAsyncExecutor(
-            const std::string& executor_id,
-            GTaskQSharedPtr p_taskq,
-            struct event_base *async_event_base);
+    gerror_code_t ShutdownExecutor(const std::string& gexecutor_id);
 
     /**
      * Creates a new Synchronous Executor with number of threads.
@@ -85,31 +78,38 @@ class GExecutorService : public GExecutorServiceBase {
      * @param num_default_threads Number of workers in worker pool
      * @return shared pointer to the executor.
      */
-    GExecutorSharedPtr CreateSyncExecutor(
+    virtual GExecutorSharedPtr CreateSyncExecutor(
             const std::string& executor_id,
-            size_t num_default_threads);
+            size_t num_default_threads) = 0;
+
+    /**
+     * @param gexecutor_id
+     * @return shared pointer to the executor
+     */
+    GExecutorSharedPtr gexecutor(const std::string& gexecutor_id =
+            kDefaultExecutorId);
 
     /**
      * Run the default asynchronous executor
      */
-    void run() {
-        event_base_dispatch(default_async_event_base_);
-    }
+    virtual void run() = 0;
 
+protected:
     /**
-     * @return default event_base
+     * lock for guarding the executor map
      */
-    struct event_base * event_base() {
-        return default_async_event_base_;
-    }
-
-private:
+    pthread_mutex_t gexecutor_svc_lock_;
     /**
      * created only when service is instantiated with
      * enable_default_async_executor
      */
-    struct event_base *default_async_event_base_;
-    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutorService);
+    GTaskQSharedPtr default_taskq_;
+    GExecutorSharedPtr default_async_executor_;
+    /**
+     * map of all the executors.
+     */
+    std::unordered_map<std::string, GExecutorSharedPtr> gexecutor_map_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutorServiceBase);
 };
 
-#endif /* GEXECUTOR_SERVICE_H_ */
+#endif /* GEXECUTOR_SERVICE_BASE_H_ */

@@ -13,7 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/../)
 set(GEXECUTOR_UNITTEST_MODULE_NAME "gexecutor_unittest")
 set(GEXECUTOR_UNITTEST_MODULE_SRCS ../gexecutor.cc ../gasync_executor.cc 
 	../gsync_executor.cc ../gtaskq.cc ../gsync_worker_thread.cc 
-	../gexecutor_service.cc)
+	../gexecutor_service.cc ../gexecutor_service_base.cc)
 
 add_executable(${GEXECUTOR_UNITTEST_MODULE_NAME} 
 	${GEXECUTOR_UNITTEST_MODULE_NAME}.cc ${GEXECUTOR_UNITTEST_MODULE_SRCS})
