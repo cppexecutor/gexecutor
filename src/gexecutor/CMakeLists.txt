@@ -32,4 +32,5 @@ install(TARGETS gexecutor-common
             ARCHIVE DESTINATION lib/static)
 
 add_subdirectory(test)
+add_subdirectory(asio)
 
