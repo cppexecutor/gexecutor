@@ -85,14 +85,14 @@ class GExecutorServiceAsio : public GExecutorServiceBase {
      * @param num_default_threads Number of workers in worker pool
      * @return shared pointer to the executor.
      */
-    GExecutorSharedPtr CreateSyncExecutor(
+    virtual GExecutorSharedPtr CreateSyncExecutor(
             const std::string& executor_id,
             size_t num_default_threads);
 
     /**
      * Run the default asynchronous executor
      */
-    void run() {
+    virtual void run() {
         event_base_dispatch(default_async_event_base_);
     }
 
