@@ -108,7 +108,8 @@ TEST_F(GExecutorAsioTest, TestSingleTask) {
     boost::shared_ptr<DeferredTask<int>> p_task(
             new DeferredTask<int>(p_resp_taskq, deferred_hello));
     async_engine->EnQueueTask(p_task);
-    asio_executors->io_service().run_one();
-
-    delete asio_executors;
+    for (auto index =0; index < 10; index++) {
+        asio_executors->io_service().run_one();
+    }
+    //delete asio_executors;
 }
