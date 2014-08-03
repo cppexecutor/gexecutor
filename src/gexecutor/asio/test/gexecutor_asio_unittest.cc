@@ -113,3 +113,35 @@ TEST_F(GExecutorAsioTest, TestSingleTask) {
     }
     //delete asio_executors;
 }
+
+void deferred_hello_cb(int result) {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << "Deferred: "
+            << __FUNCTION__
+            << " Hello: "
+            << " result " << result << std::endl;
+    return;
+
+}
+
+TEST_F(GExecutorAsioTest, TestSyncEngine) {
+    GExecutorServiceAsio *asio_executors = new GExecutorServiceAsio(true);
+    GExecutorSharedPtr async_engine =
+            asio_executors->gexecutor(GExecutorServiceBase::kDefaultExecutorId);
+
+    GExecutorSharedPtr sync_engine = asio_executors->CreateSyncExecutor("SYNC", 10);
+
+    ASSERT_TRUE(sync_engine != NULL);
+    ASSERT_TRUE(async_engine != NULL);
+    GTaskQSharedPtr p_resp_taskq = async_engine->taskq();
+    boost::shared_ptr<DeferredTask<int>> p_task(
+            new DeferredTask<int>(p_resp_taskq, deferred_hello));
+
+    p_task->set_callback(deferred_hello_cb);
+    sync_engine->EnQueueTask(p_task);
+    for (auto index =0; index < 10; index++) {
+        asio_executors->io_service().run_one();
+    }
+    //delete asio_executors;
+}
+
