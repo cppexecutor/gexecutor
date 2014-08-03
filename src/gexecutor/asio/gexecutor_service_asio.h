@@ -7,10 +7,11 @@
 
 #ifndef GEXECUTOR_SERVICE_ASIO_H_
 #define GEXECUTOR_SERVICE_ASIO_H_
-#include <event2/event.h>
+#include <boost/asio/io_service.hpp>
 #include "gexecutor/gexecutor_service_base.h"
 #include "gexecutor/gexecutor.h"
 #include <unordered_map>
+
 
 /**
  * \brief A helper class to manage all executors based on libevent (reactors)
@@ -72,7 +73,7 @@ class GExecutorServiceAsio : public GExecutorServiceBase {
     GExecutorSharedPtr CreateAsyncExecutor(
             const std::string& executor_id,
             GTaskQSharedPtr p_taskq,
-            struct event_base *async_event_base);
+            boost::asio::io_service& io_service);
 
     /**
      * Creates a new Synchronous Executor with number of threads.
@@ -93,22 +94,20 @@ class GExecutorServiceAsio : public GExecutorServiceBase {
      * Run the default asynchronous executor
      */
     virtual void run() {
-        event_base_dispatch(default_async_event_base_);
+        default_io_service_.run();
     }
-
     /**
      * @return default event_base
      */
-    struct event_base * event_base() {
-        return default_async_event_base_;
+    boost::asio::io_service& io_service() {
+        return default_io_service_;
     }
-
 private:
     /**
      * created only when service is instantiated with
      * enable_default_async_executor
      */
-    struct event_base *default_async_event_base_;
+    boost::asio::io_service default_io_service_;
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutorServiceAsio);
 };
 

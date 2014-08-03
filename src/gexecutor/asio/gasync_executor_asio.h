@@ -8,8 +8,18 @@
 #ifndef GASYN_EXECUTOR_ASIO_H_
 #define GASYN_EXECUTOR_ASIO_H_
 
-#include <event2/event.h>
+#include <asio/io_service.hpp>
+#include <boost/asio/posix/stream_descriptor.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/array.hpp>
+#include <boost/asio/placeholders.hpp>
+#include <boost/bind.hpp>
 #include "gexecutor/gexecutor.h"
+#include <boost/asio/steady_timer.hpp>
+
+using boost::asio::posix::stream_descriptor;
+using boost::system::error_code;
+
 /**
  *  \description
  *  This implements a asynchronous executor engine where tasks are expected to
@@ -35,7 +45,7 @@
  */
 class GAsyncExecutorAsio : public GExecutor {
 public:
-    GAsyncExecutorAsio(struct event_base *event_base,
+    GAsyncExecutorAsio(boost::asio::io_service& io_service,
                    GTaskQSharedPtr taskq);
     virtual ~GAsyncExecutorAsio();
     virtual gerror_code_t Initialize();
@@ -53,12 +63,14 @@ public:
     virtual void StopTimer();
 
 protected:
-    struct event_base *event_base_;
+    boost::asio::io_service& io_service_;
+    stream_descriptor taskq_read_desc_;
+    stream_descriptor taskq_write_desc_;
+    boost::array<char, 8192> taskq_msgs_;
+    boost::asio::steady_timer check_taskq_timer_;
 private:
-    struct event *p_taskq_ev_;
-    struct event *p_timer_ev_;
-    struct timeval taskq_timeout_;
-    struct timeval timer_timeout_;
+    void taskq_read_handler(const error_code& ec,
+                            std::size_t bytes_transferred);
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutorAsio);
 };
 typedef boost::shared_ptr<GAsyncExecutorAsio> GAsyncExecutorAsioSharedPtr;

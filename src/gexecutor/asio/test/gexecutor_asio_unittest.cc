@@ -32,26 +32,6 @@ DEFINE_int32(num_threads, 2, "Number of threads for running tests");
 DEFINE_int32(max_events, 3, "Max Number of events for tests");
 
 
-/**
- * Tests contructors
- */
-TEST_F(GExecutorAsioTest, InitializeConstructorsSmoke) {
-    GTaskQSharedPtr taskq(new GTaskQ());
-
-    GExecutor *async_engine =
-            new GAsyncExecutorAsio(event_base_, taskq);
-
-    GExecutor *sync_engine =
-            new GSyncExecutorAsio(taskq);
-
-    ASSERT_TRUE(async_engine != NULL);
-    ASSERT_TRUE(sync_engine != NULL);
-
-    delete async_engine;
-    delete sync_engine;
-    //delete taskq;
-}
-
 class GETestEnvironment: public testing::Environment {
 public:
     virtual void SetUp() {
@@ -82,3 +62,53 @@ int main(int argc, char *argv[]) {
     return result;
 }
 
+/**
+ * Tests contructors
+ */
+TEST_F(GExecutorAsioTest, InitializeConstructorsSmoke) {
+    GTaskQSharedPtr taskq(new GTaskQ());
+
+    GExecutor *async_engine =
+            new GAsyncExecutorAsio(io_service_, taskq);
+
+//    GExecutor *sync_engine =
+//            new GSyncExecutorAsio(taskq);
+
+    ASSERT_TRUE(async_engine != NULL);
+//    ASSERT_TRUE(sync_engine != NULL);
+
+    delete async_engine;
+//    delete sync_engine;
+    //delete taskq;
+}
+
+
+/**
+ * Tests contructors
+ */
+
+
+int deferred_hello() {
+    GEXECUTOR_LOG(GEXECUTOR_TRACE)
+            << "Deferred: "
+            << __FUNCTION__
+            << " Hello \n";
+    return 42;
+}
+
+
+TEST_F(GExecutorAsioTest, TestSingleTask) {
+    GExecutorServiceAsio *asio_executors = new GExecutorServiceAsio(true);
+
+    GExecutorSharedPtr async_engine =
+            asio_executors->gexecutor(GExecutorServiceBase::kDefaultExecutorId);
+
+    ASSERT_TRUE(async_engine != NULL);
+    GTaskQSharedPtr p_resp_taskq = async_engine->taskq();
+    boost::shared_ptr<DeferredTask<int>> p_task(
+            new DeferredTask<int>(p_resp_taskq, deferred_hello));
+    async_engine->EnQueueTask(p_task);
+    asio_executors->io_service().run_one();
+
+    delete asio_executors;
+}

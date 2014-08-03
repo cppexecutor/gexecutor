@@ -8,8 +8,9 @@
 #ifndef GASYN_CEXECUTOR_H_
 #define GASYN_CEXECUTOR_H_
 
-#include <event2/event.h>
 #include "gexecutor/gexecutor.h"
+
+
 /**
  *  \description
  *  This implements a asynchronous executor engine where tasks are expected to
