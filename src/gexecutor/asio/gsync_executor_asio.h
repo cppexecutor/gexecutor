@@ -7,7 +7,6 @@
 
 #ifndef GSYNC_EXECUTOR_ASIO_H_
 #define GSYNC_EXECUTOR_ASIO_H_
-#include <event2/event.h>
 #include "gexecutor/gexecutor.h"
 #include "gexecutor/gtaskq.h"
 #include <set>

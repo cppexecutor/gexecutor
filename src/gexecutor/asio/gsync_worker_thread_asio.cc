@@ -11,17 +11,13 @@ GSyncWorkerThreadAsio::GSyncWorkerThreadAsio(GSyncExecutorAsio* sync_executor,
                                              GTaskQSharedPtr taskq,
                                              const std::string& worker_id)
     : sync_executor_(sync_executor), taskq_(taskq), thread_id_(),
-      worker_id_(worker_id), event_base_(NULL), async_executor_(NULL)  {
+      worker_id_(worker_id), async_executor_(NULL)  {
 }
 
 GSyncWorkerThreadAsio::~GSyncWorkerThreadAsio() {
     if (async_executor_) {
         delete async_executor_;
         async_executor_ = NULL;
-    }
-    if (event_base_) {
-        event_base_free(event_base_);
-        event_base_ = NULL;
     }
 }
 
@@ -37,7 +33,6 @@ static void *gsync_executor_worker(void *args) {
             << "Starting Thread with threadid"
             << p_worker->id() << std::endl;
     p_worker->SetupEventLoop();
-    event_base_dispatch(p_worker->event_base());
     return p_worker;
 }
 
@@ -73,9 +68,7 @@ gerror_code_t GSyncWorkerThreadAsio::Initialize() {
 void GSyncWorkerThreadAsio::SetupEventLoop() {
     GEXECUTOR_LOG(GEXECUTOR_TRACE)
         << "Settting up Event loop for worker\n";
-    event_base_ = event_base_new();
-    async_executor_ = new GAsyncExecutorAsio(event_base_,
-                                             taskq_);
+    async_executor_ = new GAsyncExecutorAsio(io_, taskq_);
     async_executor_->Initialize();
 }
 

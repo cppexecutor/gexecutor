@@ -11,7 +11,7 @@ include_directories(${PROJECT_SOURCE_DIR}/../../)
 include_directories(${Boost_INCLUDE_DIRS})
 
 
-set (GEXECUTOR_SOURCES gasync_executor_asio.cc
+set (GEXECUTOR_SOURCES gasync_executor_asio.cc gsync_executor_asio.cc gsync_worker_thread_asio.cc
 		gexecutor_service_asio.cc
 		../gexecutor_service_base.cc)
 

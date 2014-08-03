@@ -8,6 +8,12 @@
 #ifndef GSYNC_WORKER_THREAD_ASIO_H_
 #define GSYNC_WORKER_THREAD_ASIO_H_
 
+#include <asio/io_service.hpp>
+#include <boost/asio/posix/stream_descriptor.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/array.hpp>
+#include <boost/asio/placeholders.hpp>
+#include <boost/bind.hpp>
 #include "gexecutor/gexecutor.h"
 #include "gexecutor/asio/gsync_executor_asio.h"
 #include "gexecutor/asio/gasync_executor_asio.h"
@@ -23,9 +29,7 @@ public:
     gerror_code_t Initialize();
     void Shutdown();
     virtual ~GSyncWorkerThreadAsio();
-    struct event_base* event_base() {
-        return event_base_;
-    }
+
     GTaskQSharedPtr taskq() {
         return taskq_;
     }
@@ -38,7 +42,7 @@ private:
     GTaskQSharedPtr taskq_;
     pthread_t thread_id_;
     std::string worker_id_;
-    struct event_base *event_base_;
+    boost::asio::io_service io_;
     GAsyncExecutorAsio *async_executor_;
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncWorkerThreadAsio);
 };
