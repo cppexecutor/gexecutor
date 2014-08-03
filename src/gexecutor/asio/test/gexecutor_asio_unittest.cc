@@ -120,6 +120,7 @@ void deferred_hello_cb(int result) {
             << __FUNCTION__
             << " Hello: "
             << " result " << result << std::endl;
+    ASSERT_TRUE(result == 42);
     return;
 
 }
