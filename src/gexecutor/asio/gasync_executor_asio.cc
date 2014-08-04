@@ -45,49 +45,6 @@ gerror_code_t GAsyncExecutorAsio::EnQueueTask(GTaskSharedPtr task) {
     return p_taskq_->EnqueueGTask(task);
 }
 
-//static void taskq_cb(evutil_socket_t fd, short what, void *arg) {
-//    char msg[4096];
-//    ssize_t num_bytes = 0;
-//    GExecutor* executor = static_cast<GExecutor *>(arg);
-//    GTaskQSharedPtr p_taskq = executor->taskq();
-//    snprintf(msg, 128, "Got an event on socket %d:%s%s%s%s Taskq[%p]",
-//             (int) fd,
-//             (what&EV_TIMEOUT) ? " timeout" : "",
-//             (what&EV_READ)    ? " read" : "",
-//             (what&EV_WRITE)   ? " write" : "",
-//             (what&EV_SIGNAL)  ? " signal" : "",
-//             arg);
-//
-//    GEXECUTOR_LOG(GEXECUTOR_TRACE) << msg << std::endl;
-//    if (!(what & EV_READ)) {
-//        return;
-//    }
-//
-//    do {
-//        num_bytes = read(fd, msg, 4096);
-//        if (num_bytes == -1) {
-//            GEXECUTOR_LOG(GEXECUTOR_TRACE)
-//                    << "Read: "<< num_bytes << " from fd: " << fd
-//                    << " errno: " << errno
-//                    << "strerr: " << strerror(errno) << std::endl;
-//            return;
-//        }
-//        //GEXECUTOR_LOG(GEXECUTOR_TRACE)
-//        //           << "Read: "<< num_bytes << " from fd: " << fd << std::endl;
-//        for (int num_tasks = 0; num_tasks < num_bytes; num_tasks++) {
-//            GTaskSharedPtr p_task = p_taskq->DequeueGTask();
-//            GEXECUTOR_LOG(GEXECUTOR_TRACE)
-//                << "Executing task " << p_task->DebugString() << std::endl;
-//            if (p_task) {
-//                p_task->set_executor(executor);
-//                p_task->Execute();
-//            }
-//        }
-//    } while (num_bytes > 0);
-//    return;
-//}
-
-
 class GTaskCheckTaskQ : public GTask {
 public:
     GTaskCheckTaskQ(GTaskQSharedPtr taskq)
@@ -102,16 +59,6 @@ protected:
         return 0;
     }
 };
-
-
-//static void check_taskq_cb(evutil_socket_t fd, short what, void *arg) {
-//    GAsyncExecutorAsio *executor = static_cast<GAsyncExecutorAsio *>(arg);
-//    VLOG(GEXECUTOR_TRACE) << __FUNCTION__ << ": checking task callback"
-//            << executor->taskq() << arg << std::endl;
-//    GTaskSharedPtr check_task(new GTaskCheckTaskQ(executor->taskq()));
-//    executor->taskq()->EnqueueGTask(check_task);
-//}
-
 
 void GAsyncExecutorAsio::taskq_read_handler(const error_code& ec,
                         std::size_t bytes_transferred) {
@@ -139,7 +86,6 @@ void GAsyncExecutorAsio::taskq_read_handler(const error_code& ec,
     return;
 
 }
-
 
 gerror_code_t GAsyncExecutorAsio::Initialize() {
     p_taskq_->Initialize();
