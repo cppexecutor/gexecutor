@@ -6,31 +6,30 @@
  */
 
 #include <pthread.h>
-#include "gexecutor/gexecutor_service.h"
-#include "gasync_executor.h"
-#include "gsync_executor.h"
+#include "gexecutor/asio/gexecutor_service_asio.h"
+#include "gexecutor/asio/gasync_executor_asio.h"
+#include "gexecutor/asio/gsync_executor_asio.h"
 
 
-GExecutorService::GExecutorService(bool enable_default_async_executor) :
+GExecutorServiceAsio::GExecutorServiceAsio(bool enable_default_async_executor) :
     GExecutorServiceBase(enable_default_async_executor),
-    default_async_event_base_(NULL) {
+    default_io_service_() {
 
     if (enable_default_async_executor == false) {
         return;
     }
-    default_async_event_base_ = event_base_new();
     default_async_executor_ =
             CreateAsyncExecutor(kDefaultExecutorId, default_taskq_,
-                                default_async_event_base_);
+                                default_io_service_);
 }
 
-GExecutorService::~GExecutorService() {
+GExecutorServiceAsio::~GExecutorServiceAsio() {
 }
 
-GExecutorSharedPtr GExecutorService::CreateAsyncExecutor(
+GExecutorSharedPtr GExecutorServiceAsio::CreateAsyncExecutor(
         const std::string& executor_id,
         GTaskQSharedPtr p_taskq,
-        struct event_base* async_event_base) {
+        boost::asio::io_service& io_service) {
     if (p_taskq == NULL) {
         GTaskQSharedPtr new_p_taskq(new GTaskQ());
         new_p_taskq->Initialize();
@@ -42,20 +41,23 @@ GExecutorSharedPtr GExecutorService::CreateAsyncExecutor(
         pthread_mutex_unlock(&gexecutor_svc_lock_);
         return executor;
     }
+
+    // TODO - fix code
     GExecutorSharedPtr p_executor(
-            new GAsyncExecutor(async_event_base,
-                               p_taskq));
+            new GAsyncExecutorAsio(io_service,
+                                   p_taskq));
     p_executor->Initialize();
     gexecutor_map_[executor_id] = p_executor;
     pthread_mutex_unlock(&gexecutor_svc_lock_);
     return p_executor;
 }
 
-GExecutorSharedPtr GExecutorService::CreateSyncExecutor(
+GExecutorSharedPtr GExecutorServiceAsio::CreateSyncExecutor(
         const std::string& executor_id,
         size_t num_workers) {
     GTaskQSharedPtr p_taskq(new GTaskQ());
-    GExecutorSharedPtr p_executor(new GSyncExecutor(p_taskq, num_workers));
+    GExecutorSharedPtr p_executor(new GAsyncExecutorAsio(default_io_service_,
+                                                         p_taskq));
     p_executor->Initialize();
     pthread_mutex_lock(&gexecutor_svc_lock_);
     gexecutor_map_[executor_id] = p_executor;

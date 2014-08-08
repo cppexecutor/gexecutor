@@ -1,4 +1,4 @@
-#C++ GExecutor#
+#C++ GExecutor 1.1#
 
 
 #Introduction#
@@ -53,10 +53,12 @@ Here is an hello world example of a simple server based on GExecutor. Please see
     int main(int argc, const char* argv[]) {
         // Creates a GExecutor reactor with default async executor loop
         GExecutorService executor_svc(true);
-        // Creates a pool of synchronous workers that accepts tasks on taskq sync_executor_->taskq();
-        sync_executor_ = executors_.CreateSyncExecutor("sync", num_sync_workers);
+        // Creates a pool of synchronous workers that accepts tasks on taskq sync_executor->taskq();
+        GExecutorSharedPtr sync_executor = executor_svc.CreateSyncExecutor("sync", num_sync_workers);
         // run the default reactor.
         executor_svc.run();
+        // alternatively if event_base was created outside one can do executor_svc(false) and call 
+        // event_dispatch outside.
     }  
     
     // Example to create an async task for the default executor
@@ -118,6 +120,20 @@ GExecutor is only supported on Linux. There is not much Linux specific implement
 
 ##Dependencies##
 It is uses boost_system, libevent, GTest (unit tests), cmake (build). Script *setup.sh* can be used for simple installation.
+
+## Boost vs libevent
+GExecutor can work with either libevent or boost::asio. It uses the reactor pattern based arctecture. 
+
+###Libevevent based libraries and header files
+**library**: libgexecutor-common.so and libgexecutor.so
+**header files**: gexecutor.h gexecutor_service.h gtaskq.h gexecutor_service_base.h
+				gexecutor_common.h deferred_task.h
+
+###boost::asio based libraries and heade files
+**Library**: libgexecutor-common.so and libgexecutor-asio.so
+**header files**: gexecutor.h gtaskq.h gexecutor_service_base.h
+				gexecutor_common.h deferred_task.h gexecutor_service_asio.h gsync_executor_asio.h 
+        		gasync_executor_asio.h
 
 
 ##Installation##

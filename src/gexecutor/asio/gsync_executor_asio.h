@@ -5,9 +5,8 @@
  *      Author: cppexecutor@gmail.com
  */
 
-#ifndef GSYNC_EXECUTOR_H_
-#define GSYNC_EXECUTOR_H_
-#include <event2/event.h>
+#ifndef GSYNC_EXECUTOR_ASIO_H_
+#define GSYNC_EXECUTOR_ASIO_H_
 #include "gexecutor/gexecutor.h"
 #include "gexecutor/gtaskq.h"
 #include <set>
@@ -22,8 +21,8 @@
  *  // create taskq where all the synchronous workers woudl listen
  *  GTaskQSharedPtr sync_taskq(new GTaskQ());
  *  sync_taskq->Initialize();
- *  GSyncExecutor *sync_engine =
- *           new GSyncExecutor(sync_taskq);
+ *  GSyncExecutorAsio *sync_engine =
+ *           new GSyncExecutorAsio(sync_taskq);
  *  // Now sync engine is ready for events
  *  Send tasks to the sync engine
  *
@@ -35,13 +34,13 @@
  *  d.set_errback(print_hello_failed);
  *  sync_executor->EnQueueTask(d);
  */
-#include "gsync_worker_thread.h"
+#include "gsync_worker_thread_asio.h"
 
-class GSyncWorkerThread;
-typedef boost::shared_ptr<GSyncWorkerThread> GSyncWorkerThreadSharedPtr;
+class GSyncWorkerThreadAsio;
+typedef boost::shared_ptr<GSyncWorkerThreadAsio> GSyncWorkerThreadAsioSharedPtr;
 
 
-class GSyncExecutor: public GExecutor {
+class GSyncExecutorAsio: public GExecutor {
 public:
     /**
      * Create Sync Executor that extends the GExecutor
@@ -51,10 +50,10 @@ public:
      * can build a mechanism to increase or decrease the number of workers
      * based on the load.
      */
-    GSyncExecutor(GTaskQSharedPtr taskq,
-                  size_t num_workers = 4);
+    GSyncExecutorAsio(GTaskQSharedPtr taskq,
+                      size_t num_workers = 4);
 
-    virtual ~GSyncExecutor();
+    virtual ~GSyncExecutorAsio();
     virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
     virtual gerror_code_t Shutdown();
     virtual GTaskQSharedPtr taskq() {
@@ -67,10 +66,10 @@ public:
     virtual gerror_code_t Initialize();
 private:
     size_t num_workers_;
-    std::set<GSyncWorkerThreadSharedPtr> workers_;
-    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncExecutor);
+    std::set<GSyncWorkerThreadAsioSharedPtr> workers_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GSyncExecutorAsio);
 };
 
-typedef boost::shared_ptr<GSyncExecutor> GSyncExecutorSharedPtr;
+typedef boost::shared_ptr<GSyncExecutorAsio> GSyncExecutorAsioSharedPtr;
 
-#endif /* GSYNC_EXECUTOR_H_ */
+#endif /* GSYNC_EXECUTOR_ASIO_H_ */

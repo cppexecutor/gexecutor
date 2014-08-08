@@ -5,11 +5,20 @@
  *      Author: cppexecutor@gmail.com
  */
 
-#ifndef GASYN_CEXECUTOR_H_
-#define GASYN_CEXECUTOR_H_
+#ifndef GASYN_EXECUTOR_ASIO_H_
+#define GASYN_EXECUTOR_ASIO_H_
 
+#include <asio/io_service.hpp>
+#include <boost/asio/posix/stream_descriptor.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/array.hpp>
+#include <boost/asio/placeholders.hpp>
+#include <boost/bind.hpp>
 #include "gexecutor/gexecutor.h"
+#include <boost/asio/steady_timer.hpp>
 
+using boost::asio::posix::stream_descriptor;
+using boost::system::error_code;
 
 /**
  *  \description
@@ -21,8 +30,8 @@
  *  // create taskq where all the synchronous workers woudl listen
  *  GTaskQSharedPtr async_taskq(new GTaskQ());
  *  async_taskq->Initialize();
- *  GASyncExecutor *async_engine =
- *           new GASyncExecutor(async_taskq);
+ *  GAsyncExecutorAsio *async_engine =
+ *           new GAsyncExecutorAsio(async_taskq);
  *  // Now sync engine is ready for events
  *  Send tasks to the sync engine
  *
@@ -34,11 +43,11 @@
  *  d.set_errback(print_hello_failed);
  *  async_executor->EnQueueTask(d);
  */
-class GAsyncExecutor : public GExecutor {
+class GAsyncExecutorAsio : public GExecutor {
 public:
-    GAsyncExecutor(struct event_base *event_base,
+    GAsyncExecutorAsio(boost::asio::io_service& io_service,
                    GTaskQSharedPtr taskq);
-    virtual ~GAsyncExecutor();
+    virtual ~GAsyncExecutorAsio();
     virtual gerror_code_t Initialize();
     virtual gerror_code_t EnQueueTask(GTaskSharedPtr task);
 //    virtual gerror_code_t EnQueueTask(GTask *task,
@@ -54,15 +63,17 @@ public:
     virtual void StopTimer();
 
 protected:
-    struct event_base *event_base_;
+    boost::asio::io_service& io_service_;
+    stream_descriptor taskq_read_desc_;
+    stream_descriptor taskq_write_desc_;
+    boost::array<char, 8192> taskq_msgs_;
+    boost::asio::steady_timer check_taskq_timer_;
 private:
-    struct event *p_taskq_ev_;
-    struct event *p_timer_ev_;
-    struct timeval taskq_timeout_;
-    struct timeval timer_timeout_;
-    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutor);
+    void taskq_read_handler(const error_code& ec,
+                            std::size_t bytes_transferred);
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GAsyncExecutorAsio);
 };
-typedef boost::shared_ptr<GAsyncExecutor> GAsyncExecutorSharedPtr;
+typedef boost::shared_ptr<GAsyncExecutorAsio> GAsyncExecutorAsioSharedPtr;
 
 
-#endif /* GASYN_CEXECUTOR_H_ */
+#endif /* GASYN_EXECUTOR_ASIO_H_ */

@@ -5,12 +5,13 @@
  *      Author: cppexecutor@gmail.com
  */
 
-#ifndef GEXECUTOR_SERVICE_H_
-#define GEXECUTOR_SERVICE_H_
-#include <event2/event.h>
+#ifndef GEXECUTOR_SERVICE_ASIO_H_
+#define GEXECUTOR_SERVICE_ASIO_H_
+#include <boost/asio/io_service.hpp>
 #include "gexecutor/gexecutor_service_base.h"
 #include "gexecutor/gexecutor.h"
 #include <unordered_map>
+
 
 /**
  * \brief A helper class to manage all executors based on libevent (reactors)
@@ -19,7 +20,7 @@
  *  a default asynchronous reactor that owns the event_base.
  *
  *  Example.
-    GExecutorService executor_svc(true);
+    GExecutorServiceAsio executor_svc(true);
     // get access to the default event_base
     struct event_base *event_base = executor_svc.event_base();
  *  // run the default reactor.
@@ -44,7 +45,7 @@
  *
  */
 
-class GExecutorService : public GExecutorServiceBase {
+class GExecutorServiceAsio : public GExecutorServiceBase {
   public:
     /**
      * @param enable_default_async_executor When set to true creates
@@ -55,8 +56,8 @@ class GExecutorService : public GExecutorServiceBase {
      *  This should be set to False in case application already has an event
      *  base.
      */
-    GExecutorService(bool enable_default_async_executor=false);
-    virtual ~GExecutorService();
+    GExecutorServiceAsio(bool enable_default_async_executor=false);
+    virtual ~GExecutorServiceAsio();
     /**
      * Creates a new Asynchronous Executor
      * @param executor_id Executor ID that can be used for referencing executor
@@ -72,7 +73,7 @@ class GExecutorService : public GExecutorServiceBase {
     GExecutorSharedPtr CreateAsyncExecutor(
             const std::string& executor_id,
             GTaskQSharedPtr p_taskq,
-            struct event_base *async_event_base);
+            boost::asio::io_service& io_service);
 
     /**
      * Creates a new Synchronous Executor with number of threads.
@@ -93,23 +94,21 @@ class GExecutorService : public GExecutorServiceBase {
      * Run the default asynchronous executor
      */
     virtual void run() {
-        event_base_dispatch(default_async_event_base_);
+        default_io_service_.run();
     }
-
     /**
      * @return default event_base
      */
-    struct event_base * event_base() {
-        return default_async_event_base_;
+    boost::asio::io_service& io_service() {
+        return default_io_service_;
     }
-
 private:
     /**
      * created only when service is instantiated with
      * enable_default_async_executor
      */
-    struct event_base *default_async_event_base_;
-    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutorService);
+    boost::asio::io_service default_io_service_;
+    GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(GExecutorServiceAsio);
 };
 
-#endif /* GEXECUTOR_SERVICE_H_ */
+#endif /* GEXECUTOR_SERVICE_ASIO_H_ */

@@ -13,10 +13,37 @@
 #include <boost/function.hpp>
 #include <error.h>
 
+/**
+ * Template to create Deferred task which takes the callback function
+ * executed as a deferred task in a remote executor.
+ *
+ * It also supports a success callback and error callback that are invoked
+ * in the originator thread / executor.
+ *
+ * Eg. Let us say there is a function print_hello that needs to be executed
+ * in a remote task in a synchronous executor
+ *
+ * GExecutorSharedPtr sync_executor = executor_svc.gexecutor(
+ *           executor_svc.kDefaultExecutorId);
+ * GTaskQSharedPtr taskq = sync_executor->taskq();
+ * boost::shared_ptr<DeferredTask<void>> d(
+ *          new DeferredTask<void>(taskq, print_hello);
+ * // attach callback when task print_hello was successful
+ * d.set_callback(print_hello_done);
+ * // attach callback when task print_hello failed.
+ * d.set_errback(print_hello_failed);
+ * sync_executor->EnQueueTask(d);
+ */
 
 template <class Rtype>
 class DeferredTask: public GTask {
 public:
+    /**
+     * Constructor for the Deferred Task which accepts the response queue and
+     * task_func that returns Rtype result.
+     * @param response_queue_
+     * @param task_fn
+     */
     DeferredTask(GTaskQSharedPtr response_queue_,
                  boost::function<Rtype()> task_fn)
         : GTask(response_queue_), task_fn_(task_fn), callback_(NULL),
@@ -25,9 +52,19 @@ public:
     virtual ~DeferredTask() {
     }
     virtual gerror_code_t Execute();
+    /**
+     * Sets the callback that would be called in the executor that is serving
+     * resposne_queue_
+     * @param callback
+     */
     void set_callback(boost::function<void(Rtype)> callback) {
         callback_ = callback;
     }
+    /**
+     * Sets the error callback called in the executor that is serving the
+     * response_queue_
+     * @param errback
+     */
     void set_errback(boost::function<void(const gerror_code_t&)> errback) {
         errback_ = errback;
     }
@@ -43,6 +80,10 @@ void deferred_cb(boost::function<void(CbArg)> callback_, CbArg result) {
     callback_(result);
 }
 
+/**
+ * Template specialization for the callbacks that do not return any result i.e.
+ * Rtype = void
+ */
 template <>
 class DeferredTask<void>: public GTask {
 public:
@@ -89,6 +130,11 @@ private:
     GEXECUTOR_DISALLOW_EVIL_CONSTRUCTORS(DeferredTask);
 };
 
+/**
+ * Generic implementation of the Execute virtual function of the GTask
+ * Interface.
+ * @return
+ */
 template<class Rtype>
 gerror_code_t DeferredTask<Rtype>::Execute() {
     try {
