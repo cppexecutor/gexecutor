@@ -2,7 +2,7 @@
 
 
 #Introduction#
-GExector provides a unified way to handle synchronous and asynchronous tasks by abstracting them from underlying thread and process architecture. It is a C++ library which offers similar capabilities like Executor framework in Java and Twisted in Python.
+GExecutor provides a unified way to handle synchronous and asynchronous tasks by abstracting them from underlying thread and process architecture. It is a C++ library which offers similar capabilities like Executor framework in Java and Twisted in Python.
 
 One of the well studied patterns for implementing a High performance I/O bound applications is to use asynchronous processing of client requests. Multiple client requests can be served without the cost of context switching thus achieving better performance at lower CPU and memory requirements. Such a design pattern is also referred as reactor pattern. Libraries like libevent or boost::asio make it easy to implement reactor patterns built on lower level APIs like kqueue, epoll, select etc.  
 
