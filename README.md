@@ -12,7 +12,8 @@ Reactor pattern has two limitations
 
 Multi-threaded or multi-process performance can outperform a single threaded systems by using concurrent data structures or shared memory in spite of added context switches and locking overheads in a reactor pattern. However, such systems may not perform well due to bad locking design (coarse), deadlocks, and complex data structures based on shared memory. More details on this discussion can be found at [C10K Problem](http://www.kegel.com/c10k.html).  
 
-GExector offers a hybrid solution to take advantage of both paradigms and make it simple to use appropriate pattern for different aspects of application without loss of performance. It is a hybrid event loop based task processing framework which handles and routes tasks between async event loops and worker threads for processing synchronous tasks. It is designed as a utility
+GExecutor offers a hybrid solution to take advantage of both paradigms and make it simple to use appropriate pattern for different aspects of application without loss of performance. It is a hybrid event loop based task processing framework which handles and routes tasks between async event loops and worker threads for processing synchronous tasks. It is designed as a utility that is layered above libevent or asio and can be plugged into any application. It does not create
+a wrapper over the standard workflows or interfaces provided by existing libraries.
 
 GExecutor is inspired by Java Executor based on [SEDA](http://www.eecs.harvard.edu/~mdw/proj/seda/) and [Twisted](http://twistedmatrix.com/trac/wiki) for python. It currently uses libevent based event loop for implementation on Linux. I plan to add boost::asio based implementation in future.
 
@@ -140,6 +141,7 @@ GExecutor can work with either libevent or boost::asio. It uses the reactor patt
 Linux installation requires following steps:  
 
     git checkout https://github.com/cppexecutor/gexecutor.git
+    ./setup.sh
     mkdir build
     cd build
     cmake ../src
