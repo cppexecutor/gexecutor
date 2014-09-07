@@ -15,7 +15,7 @@ Multi-threaded or multi-process performance can outperform a single threaded sys
 GExecutor offers a hybrid solution to take advantage of both paradigms and make it simple to use appropriate pattern for different aspects of application without loss of performance. It is a hybrid event loop based task processing framework which handles and routes tasks between async event loops and worker threads for processing synchronous tasks. It is designed as a utility that is layered above libevent or asio and can be plugged into any application. It does not create
 a wrapper over the standard workflows or interfaces provided by existing libraries.
 
-GExecutor is inspired by Java Executor based on [SEDA](http://www.eecs.harvard.edu/~mdw/proj/seda/) and [Twisted](http://twistedmatrix.com/trac/wiki) for python. It currently uses libevent based event loop for implementation on Linux. I plan to add boost::asio based implementation in future.
+GExecutor is inspired by Java Executor based on [SEDA](http://www.eecs.harvard.edu/~mdw/proj/seda/) and [Twisted](http://twistedmatrix.com/trac/wiki) for python. It currently has option to use libevent or boost::asio based event loop for implementation for Linux.
 
 #Architecture
 GExector design is based on two important elements. Every executor has a task queue that it uses to receive Tasks. Each Task implements a virtual method *Execute()* that is invoked by the executor. Tasks contain pointer to the response Queue that it can use to send back results to the originating Executor.
@@ -130,7 +130,7 @@ GExecutor can work with either libevent or boost::asio. It uses the reactor patt
 **header files**: gexecutor.h gexecutor_service.h gtaskq.h gexecutor_service_base.h
 				gexecutor_common.h deferred_task.h
 
-###boost::asio based libraries and heade files
+###boost::asio based libraries and header files
 **Library**: libgexecutor-common.so and libgexecutor-asio.so
 **header files**: gexecutor.h gtaskq.h gexecutor_service_base.h
 				gexecutor_common.h deferred_task.h gexecutor_service_asio.h gsync_executor_asio.h 
