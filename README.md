@@ -125,7 +125,7 @@ It is uses boost_system, libevent, GTest (unit tests), cmake (build). Script *se
 ## Boost vs libevent
 GExecutor can work with either libevent or boost::asio. It uses the reactor pattern based arctecture. 
 
-###Libevevent based libraries and header files
+###Libevent based libraries and header files
 **library**: libgexecutor-common.so and libgexecutor.so
 **header files**: gexecutor.h gexecutor_service.h gtaskq.h gexecutor_service_base.h
 				gexecutor_common.h deferred_task.h
