@@ -23,9 +23,9 @@ GExector design is based on two important elements. Every executor has a task qu
 A DeferredTask template is a simple interface to use callback functions instead of creating a lower level task interface.
 
 A DeferredTask (deferred_task.h) supports three kinds of callbacks  
-1. task_fn: a function pointer implementing the task which is deferred onto a different execution context.
-2. callback: Optional Task Callback is called with the arguments as the result returned by the above task_fn.
-3. errback: Task Errback called when either during task execution or during task callback execution.
+1. task_fn: a function pointer implementing the task which is deferred onto a different execution context.  
+2. callback: Optional Task Callback is called with the arguments as the result returned by the above task_fn.  
+3. errback: Task Errback called when either during task execution or during task callback execution.  
 
 #Example#
 Here is an hello world example of a simple server based on GExecutor. Please see samples/simple_http_server for full reference:  
