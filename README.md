@@ -97,18 +97,18 @@ Here is an hello world example of a simple server based on GExecutor. Please see
 
 Here are some of the example reactor paradigms that can be easily implemented using GExecutor
 ##Single Async loop with synchronous worker pools##
-![alt text](1async1sync.jpg)
+![alt text](https://github.com/cppexecutor/gexecutor/blob/dev/1async1sync.jpg "Single Async loop with synchronous worker pools")
 
 There is one default async executor and one pool of synch workers. This is perhaps most common option for the I/O bound applications. CPU bound application would either need to break away tasks for workers or create multiple async execution blocks.
 
-##Multiple Async loop using single synchronous worker pool
+##Multiple Async loop using single synchronous worker pool##
 This is useful in the cases like HTTP server needs more than one CPU to just handle the TCP connection accepts. These accepts can be handled in a distributed executors. However, the request can then be sent to a common Executor/thread that is used for implementing the application logic using reactor design. This mechanism avoids need to use shared memory for sharing information like configuration data between two threads/processes.
-![alt text](multi-async-1-sync.jpg)
+![alt text](https://github.com/cppexecutor/gexecutor/blob/dev/multi-async-1-sync.jpg "Multiple Async loop using single synchronous worker pool")
 
 
 ##Multiple Async loop with multiple synchronous worker pools##
 This is useful in implementing multi-stage SEDA style processing blocks where each stage is also based on reactor processing. Each stage can have its own synchronous processing pools with their own worker sizes.
-![alt text](multi-async-multi-sync.jpg)
+![alt text](https://github.com/cppexecutor/gexecutor/blob/dev/multi-async-multi-sync.jpg "Multiple Async loop with multiple synchronous worker pools")
 
 
 #Design considerations#
