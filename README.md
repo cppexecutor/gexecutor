@@ -84,9 +84,13 @@ Here is an hello world example of a simple server based on GExecutor. Please see
         //Example to add print "Hello" Tasks
         GExecutorSharedPtr sync_executor = executor_svc.gexecutor(
             "sync");
-        GTaskQSharedPtr taskq = sync_executor->taskq();
+        GExecutorSharedPtr async_executor = executor_svc.gexecutor(
+            executor_svc.kDefaultExecutorId);
+        // Get Taskq to receive the reponse from the sync executor
+        // and set it in the deferred task.
+        GTaskQSharedPtr resp_taskq = async_executor->taskq();
         boost::shared_ptr<DeferredTask<void>> d(
-            new DeferredTask<void>(taskq, print_hello);
+            new DeferredTask<void>(resp_taskq, print_hello);
         // attach callback when task print_hello was successful
         d.set_callback(print_hello_done);
         // attach callback when task print_hello failed.
