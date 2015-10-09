@@ -127,7 +127,7 @@ GExecutor is only supported on Linux. There is not much Linux specific implement
 It is uses boost_system, libevent, GTest (unit tests), cmake (build). Script *setup.sh* can be used for simple installation.
 
 ## Boost vs libevent
-GExecutor can work with either libevent or boost::asio. It uses the reactor pattern based arctecture. 
+GExecutor can work with either libevent or boost::asio. It uses the reactor pattern based architecture. 
 
 ###Libevent based libraries and header files
 **library**: libgexecutor-common.so and libgexecutor.so
@@ -159,5 +159,5 @@ All the software provided under gexecutor under the MIT License
 #Contact#
 Gaurav Rastogi
 https://www.linkedin.com/in/grrastogi
-contact: cppexecutor@gmail.com
+contact: gr.rastogi@gmail.com
 
